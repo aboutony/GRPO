@@ -1,0 +1,1376 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>GRPO Module — SAP Business One V10.0 Integration & Onboarding Guide</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet" />
+    <style>
+        @page {
+            size: A4;
+            margin: 20mm 18mm 20mm 18mm;
+        }
+
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+            font-size: 11pt;
+            line-height: 1.6;
+            color: #1a1a2e;
+            background: #fff;
+            max-width: 210mm;
+            margin: 0 auto;
+            padding: 20mm 18mm;
+        }
+
+        /* ── Print Controls ────────────────────────────────────────── */
+        .no-print {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .no-print button {
+            padding: 14px 32px;
+            border-radius: 10px;
+            border: none;
+            background: linear-gradient(135deg, #2563EB, #3B82F6);
+            color: #fff;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            font-family: inherit;
+            box-shadow: 0 4px 16px rgba(37, 99, 235, 0.3);
+        }
+
+        .no-print button:hover {
+            transform: translateY(-1px);
+        }
+
+        .no-print p {
+            margin-top: 8px;
+            font-size: 12px;
+            color: #6B7280;
+        }
+
+        @media print {
+            .no-print {
+                display: none !important;
+            }
+
+            body {
+                padding: 0;
+                max-width: none;
+            }
+        }
+
+        /* ── Typography ────────────────────────────────────────────── */
+        h1 {
+            font-size: 26pt;
+            font-weight: 800;
+            line-height: 1.2;
+            margin-bottom: 4px;
+            color: #0f172a;
+        }
+
+        h2 {
+            font-size: 16pt;
+            font-weight: 700;
+            color: #1e3a5f;
+            border-bottom: 2px solid #2563EB;
+            padding-bottom: 6px;
+            margin-top: 28px;
+            margin-bottom: 14px;
+            page-break-after: avoid;
+        }
+
+        h3 {
+            font-size: 12pt;
+            font-weight: 700;
+            color: #334155;
+            margin-top: 18px;
+            margin-bottom: 8px;
+            page-break-after: avoid;
+        }
+
+        h4 {
+            font-size: 11pt;
+            font-weight: 600;
+            color: #475569;
+            margin-top: 12px;
+            margin-bottom: 6px;
+        }
+
+        p {
+            margin-bottom: 10px;
+        }
+
+        ul,
+        ol {
+            margin-left: 20px;
+            margin-bottom: 10px;
+        }
+
+        li {
+            margin-bottom: 4px;
+        }
+
+        strong {
+            font-weight: 700;
+        }
+
+        code {
+            font-family: 'Consolas', 'Courier New', monospace;
+            background: #f1f5f9;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 10pt;
+            color: #be185d;
+        }
+
+        pre {
+            background: #1e293b;
+            color: #e2e8f0;
+            padding: 16px;
+            border-radius: 10px;
+            font-family: 'Consolas', monospace;
+            font-size: 9pt;
+            line-height: 1.5;
+            overflow-x: auto;
+            margin: 12px 0 16px;
+            page-break-inside: avoid;
+        }
+
+        /* ── Cover ─────────────────────────────────────────────────── */
+        .cover {
+            text-align: center;
+            padding: 60px 0 40px;
+            border-bottom: 3px solid #2563EB;
+            margin-bottom: 30px;
+            page-break-after: always;
+        }
+
+        .cover .logo {
+            font-size: 48pt;
+            margin-bottom: 16px;
+        }
+
+        .cover .tag {
+            display: inline-block;
+            padding: 6px 18px;
+            border-radius: 100px;
+            background: #eff6ff;
+            color: #2563EB;
+            font-size: 10pt;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin: 12px 0;
+        }
+
+        .cover .subtitle {
+            font-size: 13pt;
+            color: #64748b;
+            margin-top: 8px;
+            line-height: 1.5;
+        }
+
+        .cover .meta-table {
+            margin: 30px auto 0;
+            border-collapse: collapse;
+            text-align: left;
+            font-size: 10pt;
+            color: #475569;
+        }
+
+        .cover .meta-table td {
+            padding: 6px 16px;
+        }
+
+        .cover .meta-table td:first-child {
+            font-weight: 600;
+            color: #1e3a5f;
+        }
+
+        /* ── Tables ────────────────────────────────────────────────── */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 12px 0 18px;
+            font-size: 10pt;
+            page-break-inside: avoid;
+        }
+
+        th {
+            background: #1e3a5f;
+            color: #fff;
+            padding: 10px 12px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 9pt;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+        }
+
+        td {
+            padding: 8px 12px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        tr:nth-child(even) {
+            background: #f8fafc;
+        }
+
+        /* ── Callouts ──────────────────────────────────────────────── */
+        .callout {
+            padding: 14px 18px;
+            border-radius: 10px;
+            margin: 14px 0;
+            font-size: 10pt;
+            page-break-inside: avoid;
+        }
+
+        .callout-important {
+            background: #fef3c7;
+            border-left: 4px solid #f59e0b;
+        }
+
+        .callout-warning {
+            background: #fee2e2;
+            border-left: 4px solid #ef4444;
+        }
+
+        .callout-info {
+            background: #eff6ff;
+            border-left: 4px solid #3b82f6;
+        }
+
+        .callout-success {
+            background: #ecfdf5;
+            border-left: 4px solid #10b981;
+        }
+
+        .callout .callout-title {
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        /* ── Steps ─────────────────────────────────────────────────── */
+        .step {
+            display: flex;
+            gap: 14px;
+            margin-bottom: 18px;
+            page-break-inside: avoid;
+        }
+
+        .step-num {
+            flex-shrink: 0;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: #2563EB;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            font-size: 14px;
+            margin-top: 2px;
+        }
+
+        .step-content {
+            flex: 1;
+        }
+
+        /* ── Checklist ─────────────────────────────────────────────── */
+        .checklist {
+            list-style: none;
+            margin-left: 0;
+        }
+
+        .checklist li {
+            padding: 6px 0 6px 28px;
+            position: relative;
+        }
+
+        .checklist li::before {
+            content: '☐';
+            position: absolute;
+            left: 0;
+            font-size: 14px;
+            color: #94a3b8;
+        }
+
+        /* ── Footer ────────────────────────────────────────────────── */
+        .footer {
+            margin-top: 40px;
+            padding-top: 16px;
+            border-top: 1px solid #e2e8f0;
+            font-size: 9pt;
+            color: #94a3b8;
+            text-align: center;
+        }
+
+        .page-break {
+            page-break-before: always;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Download Button -->
+    <div class="no-print">
+        <button onclick="window.print()">📄 Download as PDF</button>
+        <p>Click the button, then choose "Save as PDF" in the print dialog.</p>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════════════════ -->
+    <!-- COVER PAGE                                                           -->
+    <!-- ═══════════════════════════════════════════════════════════════════════ -->
+    <div class="cover">
+        <div class="logo">📦</div>
+        <h1>GRPO Module</h1>
+        <div style="font-size:16pt;font-weight:300;color:#64748b;">SAP Business One V10.0</div>
+        <div style="font-size:18pt;font-weight:700;color:#1e3a5f;margin-top:8px;">Integration & Onboarding Guide</div>
+        <div class="tag">Medical Device Receiving</div>
+        <div class="subtitle">
+            Mobile-first Goods Receipt PO module with GS1-128 barcode scanning,<br>
+            PO-driven validation, SABER regulatory gate, and SFDA compliance.
+        </div>
+        <table class="meta-table">
+            <tr>
+                <td>Version</td>
+                <td>1.0</td>
+            </tr>
+            <tr>
+                <td>SAP B1 Version</td>
+                <td>10.0 FP 2305 or later (HANA / SQL)</td>
+            </tr>
+            <tr>
+                <td>Date</td>
+                <td>March 5, 2026</td>
+            </tr>
+            <tr>
+                <td>Classification</td>
+                <td>Confidential — Client Distribution Only</td>
+            </tr>
+            <tr>
+                <td>Prepared by</td>
+                <td>Antigravity Engineering</td>
+            </tr>
+        </table>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════════════════ -->
+    <!-- TABLE OF CONTENTS                                                    -->
+    <!-- ═══════════════════════════════════════════════════════════════════════ -->
+    <h2>Table of Contents</h2>
+    <ol style="font-size:10pt;line-height:2;">
+        <li>Prerequisites & Environment Requirements</li>
+        <li>SAP B1 User-Defined Tables (UDTs) — Schema Setup</li>
+        <li>SAP B1 User-Defined Fields (UDFs) — Field Injection</li>
+        <li>DI API Service Layer Configuration</li>
+        <li>GRPO Service Installation & Configuration</li>
+        <li>Mobile Device Enrollment</li>
+        <li>Purchase Order Configuration for PO-Driven Receiving</li>
+        <li>Barcode Label Requirements (GS1-128 / DataMatrix)</li>
+        <li>SABER API Integration (Saudi Conformity)</li>
+        <li>SFDA Reporting Configuration</li>
+        <li>User Roles & Permissions</li>
+        <li>Go-Live Checklist</li>
+        <li>Troubleshooting & Support</li>
+    </ol>
+
+    <div class="page-break"></div>
+
+    <!-- ═══════════════════════════════════════════════════════════════════════ -->
+    <!-- SECTION 1: Prerequisites                                              -->
+    <!-- ═══════════════════════════════════════════════════════════════════════ -->
+    <h2>1. Prerequisites & Environment Requirements</h2>
+
+    <h3>1.1 SAP Business One</h3>
+    <table>
+        <tr>
+            <th>Requirement</th>
+            <th>Minimum</th>
+            <th>Recommended</th>
+        </tr>
+        <tr>
+            <td>SAP B1 Version</td>
+            <td>10.0 FP 2211</td>
+            <td>10.0 FP 2305+</td>
+        </tr>
+        <tr>
+            <td>Database</td>
+            <td>MS SQL 2019</td>
+            <td>SAP HANA 2.0 SPS06</td>
+        </tr>
+        <tr>
+            <td>Service Layer</td>
+            <td>Enabled</td>
+            <td>Enabled + HTTPS</td>
+        </tr>
+        <tr>
+            <td>DI API</td>
+            <td>Installed on app server</td>
+            <td>Same</td>
+        </tr>
+        <tr>
+            <td>License</td>
+            <td>Professional</td>
+            <td>Professional</td>
+        </tr>
+    </table>
+
+    <h3>1.2 Network</h3>
+    <table>
+        <tr>
+            <th>Endpoint</th>
+            <th>Protocol</th>
+            <th>Port</th>
+        </tr>
+        <tr>
+            <td>SAP Service Layer</td>
+            <td>HTTPS</td>
+            <td>50000</td>
+        </tr>
+        <tr>
+            <td>SAP DI API (COM)</td>
+            <td>TCP</td>
+            <td>30015 (HANA) / 1433 (SQL)</td>
+        </tr>
+        <tr>
+            <td>GRPO Core Service</td>
+            <td>HTTPS</td>
+            <td>8443</td>
+        </tr>
+        <tr>
+            <td>SABER API</td>
+            <td>HTTPS</td>
+            <td>443</td>
+        </tr>
+    </table>
+
+    <h3>1.3 Server (GRPO Core Service)</h3>
+    <ul>
+        <li>Windows Server 2019+ or Ubuntu 22.04 LTS</li>
+        <li>.NET 8.0 Runtime (for DI API Adapter)</li>
+        <li>Node.js 20 LTS (for Sync Engine)</li>
+        <li>4 vCPU / 8GB RAM minimum (8 vCPU / 16GB recommended)</li>
+        <li>Network access to SAP server on the same LAN segment</li>
+    </ul>
+
+    <div class="callout callout-important">
+        <div class="callout-title">⚠️ Important</div>
+        The GRPO module connects to your <strong>live SAP B1 production database</strong>. All schema changes
+        (UDTs/UDFs) are additive and non-destructive. However, we strongly recommend creating a full database backup
+        before running the schema provisioning script.
+    </div>
+
+    <div class="page-break"></div>
+
+    <!-- ═══════════════════════════════════════════════════════════════════════ -->
+    <!-- SECTION 2: UDTs                                                       -->
+    <!-- ═══════════════════════════════════════════════════════════════════════ -->
+    <h2>2. User-Defined Tables (UDTs)</h2>
+    <p>The GRPO module requires <strong>2 custom tables</strong> to be created in SAP B1. These are provisioned
+        automatically by the schema sync script, or can be created manually via <strong>Tools → Customization Tools →
+            User-Defined Tables — Setup</strong>.</p>
+
+    <h3>2.1 @GRPO_AUDIT_LOG</h3>
+    <p>Stores the SHA-256 hash chain for regulatory audit compliance.</p>
+    <table>
+        <tr>
+            <th>Column</th>
+            <th>Type</th>
+            <th>Size</th>
+            <th>Description</th>
+        </tr>
+        <tr>
+            <td>Code</td>
+            <td>Alphanumeric</td>
+            <td>50</td>
+            <td>Primary key (auto-generated)</td>
+        </tr>
+        <tr>
+            <td>Name</td>
+            <td>Alphanumeric</td>
+            <td>100</td>
+            <td>Display name</td>
+        </tr>
+        <tr>
+            <td>U_Action</td>
+            <td>Alphanumeric</td>
+            <td>50</td>
+            <td>Action type (GRPO_CREATED, QC_HELD, etc.)</td>
+        </tr>
+        <tr>
+            <td>U_DocEntry</td>
+            <td>Numeric</td>
+            <td>11</td>
+            <td>Related SAP document entry</td>
+        </tr>
+        <tr>
+            <td>U_Operator</td>
+            <td>Alphanumeric</td>
+            <td>50</td>
+            <td>Operator who performed action</td>
+        </tr>
+        <tr>
+            <td>U_Hash</td>
+            <td>Alphanumeric</td>
+            <td>64</td>
+            <td>SHA-256 hash of record</td>
+        </tr>
+        <tr>
+            <td>U_PrevHash</td>
+            <td>Alphanumeric</td>
+            <td>64</td>
+            <td>Previous record hash (chain link)</td>
+        </tr>
+        <tr>
+            <td>U_Payload</td>
+            <td>Memo</td>
+            <td>—</td>
+            <td>Full JSON payload</td>
+        </tr>
+        <tr>
+            <td>U_Timestamp</td>
+            <td>Alphanumeric</td>
+            <td>30</td>
+            <td>ISO 8601 timestamp</td>
+        </tr>
+    </table>
+
+    <h3>2.2 @GRPO_QC_RECORDS</h3>
+    <p>Stores quality control inspection records and defect evidence.</p>
+    <table>
+        <tr>
+            <th>Column</th>
+            <th>Type</th>
+            <th>Size</th>
+            <th>Description</th>
+        </tr>
+        <tr>
+            <td>Code</td>
+            <td>Alphanumeric</td>
+            <td>50</td>
+            <td>Primary key</td>
+        </tr>
+        <tr>
+            <td>Name</td>
+            <td>Alphanumeric</td>
+            <td>100</td>
+            <td>Display name</td>
+        </tr>
+        <tr>
+            <td>U_DocEntry</td>
+            <td>Numeric</td>
+            <td>11</td>
+            <td>GRPO document entry</td>
+        </tr>
+        <tr>
+            <td>U_ItemCode</td>
+            <td>Alphanumeric</td>
+            <td>50</td>
+            <td>Item code inspected</td>
+        </tr>
+        <tr>
+            <td>U_BatchNum</td>
+            <td>Alphanumeric</td>
+            <td>36</td>
+            <td>Batch/lot number</td>
+        </tr>
+        <tr>
+            <td>U_DefectCodes</td>
+            <td>Alphanumeric</td>
+            <td>254</td>
+            <td>Comma-separated defect codes</td>
+        </tr>
+        <tr>
+            <td>U_PhotoPath</td>
+            <td>Alphanumeric</td>
+            <td>254</td>
+            <td>Evidence photo file path</td>
+        </tr>
+        <tr>
+            <td>U_Inspector</td>
+            <td>Alphanumeric</td>
+            <td>50</td>
+            <td>QC inspector name</td>
+        </tr>
+        <tr>
+            <td>U_Result</td>
+            <td>Alphanumeric</td>
+            <td>20</td>
+            <td>PASS / FAIL / HOLD</td>
+        </tr>
+        <tr>
+            <td>U_Notes</td>
+            <td>Memo</td>
+            <td>—</td>
+            <td>Inspection notes</td>
+        </tr>
+    </table>
+
+    <div class="callout callout-info">
+        <div class="callout-title">ℹ️ Automated Provisioning</div>
+        Run <code>npm run schema:sync</code> from the GRPO service to automatically create these tables. The script is
+        idempotent — it will skip tables that already exist.
+    </div>
+
+    <div class="page-break"></div>
+
+    <!-- ═══════════════════════════════════════════════════════════════════════ -->
+    <!-- SECTION 3: UDFs                                                       -->
+    <!-- ═══════════════════════════════════════════════════════════════════════ -->
+    <h2>3. User-Defined Fields (UDFs)</h2>
+    <p>The following UDFs are injected into SAP B1's standard GRPO document (OPDN/PDN1). These can be created manually
+        via <strong>Tools → Customization Tools → User-Defined Fields — Management</strong>, or provisioned
+        automatically.</p>
+
+    <h3>3.1 Header-Level UDFs (OPDN Table)</h3>
+    <table>
+        <tr>
+            <th>Field Name</th>
+            <th>Description</th>
+            <th>Type</th>
+            <th>Size</th>
+            <th>Mandatory</th>
+        </tr>
+        <tr>
+            <td>U_GRPO_SfdaSubId</td>
+            <td>SFDA Submission ID</td>
+            <td>Alphanumeric</td>
+            <td>50</td>
+            <td>No</td>
+        </tr>
+        <tr>
+            <td>U_GRPO_ReceivedBy</td>
+            <td>Receiving operator name</td>
+            <td>Alphanumeric</td>
+            <td>50</td>
+            <td>Yes</td>
+        </tr>
+        <tr>
+            <td>U_GRPO_QcStatus</td>
+            <td>Overall QC status</td>
+            <td>Alphanumeric</td>
+            <td>20</td>
+            <td>Yes</td>
+        </tr>
+        <tr>
+            <td>U_GRPO_SaberCertId</td>
+            <td>SABER certificate ID</td>
+            <td>Alphanumeric</td>
+            <td>50</td>
+            <td>No</td>
+        </tr>
+        <tr>
+            <td>U_GRPO_SaberStatus</td>
+            <td>SABER validation result</td>
+            <td>Alphanumeric</td>
+            <td>20</td>
+            <td>No</td>
+        </tr>
+        <tr>
+            <td>U_GRPO_AuditHash</td>
+            <td>Document audit hash</td>
+            <td>Alphanumeric</td>
+            <td>64</td>
+            <td>No</td>
+        </tr>
+        <tr>
+            <td>U_GRPO_DeviceId</td>
+            <td>Mobile device ID</td>
+            <td>Alphanumeric</td>
+            <td>30</td>
+            <td>No</td>
+        </tr>
+        <tr>
+            <td>U_GRPO_SyncTs</td>
+            <td>Sync timestamp</td>
+            <td>Alphanumeric</td>
+            <td>30</td>
+            <td>No</td>
+        </tr>
+    </table>
+
+    <h3>3.2 Line-Level UDFs (PDN1 Table)</h3>
+    <table>
+        <tr>
+            <th>Field Name</th>
+            <th>Description</th>
+            <th>Type</th>
+            <th>Size</th>
+            <th>Mandatory</th>
+        </tr>
+        <tr>
+            <td>U_GRPO_UdiDi</td>
+            <td>UDI Device Identifier</td>
+            <td>Alphanumeric</td>
+            <td>50</td>
+            <td>No</td>
+        </tr>
+        <tr>
+            <td>U_GRPO_UdiPi</td>
+            <td>UDI Production Identifier</td>
+            <td>Alphanumeric</td>
+            <td>100</td>
+            <td>No</td>
+        </tr>
+        <tr>
+            <td>U_GRPO_Sterility</td>
+            <td>Sterility class (S/N/T)</td>
+            <td>Alphanumeric</td>
+            <td>1</td>
+            <td>No</td>
+        </tr>
+        <tr>
+            <td>U_GRPO_GtinScanned</td>
+            <td>Scanned GTIN-14 barcode</td>
+            <td>Alphanumeric</td>
+            <td>14</td>
+            <td>No</td>
+        </tr>
+        <tr>
+            <td>U_GRPO_QcReq</td>
+            <td>QC inspection required (Y/N)</td>
+            <td>Alphanumeric</td>
+            <td>1</td>
+            <td>No</td>
+        </tr>
+    </table>
+
+    <div class="callout callout-warning">
+        <div class="callout-title">🔴 Critical — Item Master Setup</div>
+        For PO-driven receiving to work, each <strong>Item Master</strong> must have:<br>
+        • <strong>Manage Item by Batches</strong> = Yes (for batch-managed medical devices)<br>
+        • The GTIN must be stored in the Item's <strong>Bar Codes</strong> table (OBCD)<br>
+        • If QC inspection is required, set <code>U_GRPO_QcReq = 'Y'</code> on the item
+    </div>
+
+    <div class="page-break"></div>
+
+    <!-- ═══════════════════════════════════════════════════════════════════════ -->
+    <!-- SECTION 4: DI API / Service Layer                                     -->
+    <!-- ═══════════════════════════════════════════════════════════════════════ -->
+    <h2>4. DI API & Service Layer Configuration</h2>
+
+    <h3>4.1 Service Layer Setup</h3>
+    <p>The GRPO module uses the SAP B1 Service Layer for PO retrieval and the DI API (COM) for document posting.</p>
+
+    <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-content">
+            <strong>Verify Service Layer is running</strong><br>
+            Navigate to <code>https://your-sap-server:50000/b1s/v1/</code> in a browser.<br>
+            You should see: <code>{"odata.metadata":"..."}</code>
+        </div>
+    </div>
+
+    <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-content">
+            <strong>Create a dedicated Service Layer user</strong><br>
+            In SAP B1: <strong>Administration → Setup → General → Users</strong>.<br>
+            Create user <code>GRPO_SERVICE</code> with <strong>Super User</strong> permissions and a strong password.
+        </div>
+    </div>
+
+    <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-content">
+            <strong>Test authentication</strong>
+            <pre>POST https://your-sap-server:50000/b1s/v1/Login
+Content-Type: application/json
+
+{
+  "CompanyDB": "YOUR_COMPANY_DB",
+  "UserName": "GRPO_SERVICE",
+  "Password": "your-strong-password"
+}</pre>
+            Expected: <code>200 OK</code> with session ID.
+        </div>
+    </div>
+
+    <h3>4.2 DI API Connection Pool</h3>
+    <p>The GRPO Adapter maintains a connection pool to the DI API for atomic GRPO posting.</p>
+    <table>
+        <tr>
+            <th>Setting</th>
+            <th>Value</th>
+            <th>Description</th>
+        </tr>
+        <tr>
+            <td>SAP_SERVER</td>
+            <td>your-sap-server</td>
+            <td>SAP B1 server hostname</td>
+        </tr>
+        <tr>
+            <td>SAP_COMPANY_DB</td>
+            <td>YOUR_COMPANY_DB</td>
+            <td>Company database name</td>
+        </tr>
+        <tr>
+            <td>SAP_DB_TYPE</td>
+            <td>dst_HANADB</td>
+            <td><code>dst_HANADB</code> or <code>dst_MSSQL2019</code></td>
+        </tr>
+        <tr>
+            <td>SAP_USER</td>
+            <td>GRPO_SERVICE</td>
+            <td>DI API user</td>
+        </tr>
+        <tr>
+            <td>SAP_PASSWORD</td>
+            <td>(encrypted)</td>
+            <td>Stored in environment variable</td>
+        </tr>
+        <tr>
+            <td>SAP_LICENSE_SERVER</td>
+            <td>sap-lic:40000</td>
+            <td>License server address</td>
+        </tr>
+        <tr>
+            <td>DI_POOL_SIZE</td>
+            <td>5</td>
+            <td>Max concurrent DI API connections</td>
+        </tr>
+    </table>
+
+    <div class="page-break"></div>
+
+    <!-- ═══════════════════════════════════════════════════════════════════════ -->
+    <!-- SECTION 5: Service Installation                                       -->
+    <!-- ═══════════════════════════════════════════════════════════════════════ -->
+    <h2>5. GRPO Service Installation</h2>
+
+    <h3>5.1 Environment File</h3>
+    <p>Create a <code>.env</code> file on the GRPO service server:</p>
+    <pre># SAP B1 Connection
+SAP_SERVER=sap-b1.your-domain.local
+SAP_COMPANY_DB=YOUR_COMPANY_DB
+SAP_DB_TYPE=dst_HANADB
+SAP_USER=GRPO_SERVICE
+SAP_PASSWORD=your-encrypted-password
+SAP_LICENSE_SERVER=sap-lic.your-domain.local:40000
+
+# Service Layer
+SERVICE_LAYER_URL=https://sap-b1.your-domain.local:50000/b1s/v1
+
+# GRPO Service
+GRPO_PORT=8443
+GRPO_HOST=0.0.0.0
+SYNC_INTERVAL_MS=3000
+MAX_BATCH_SIZE=50
+OFFLINE_QUEUE_LIMIT=500
+
+# Regulatory
+SABER_API_URL=https://api.saber.sa/v1
+SABER_API_KEY=your-saber-api-key
+SABER_MODE=strict
+SFDA_EXPORT_CRON=0 2 * * *
+SFDA_EXPORT_FORMAT=XML
+
+# Security
+JWT_SECRET=your-256-bit-secret
+AUDIT_HASH_ALGORITHM=SHA-256</pre>
+
+    <h3>5.2 Schema Provisioning</h3>
+    <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-content">
+            <strong>Run the schema sync</strong><br>
+            <pre>npm run schema:sync</pre>
+            This will create 2 UDTs and 13 UDFs idempotently. Output:
+            <pre>✅ Table @GRPO_AUDIT_LOG — exists, verified
+✅ Table @GRPO_QC_RECORDS — exists, verified
+✅ 8 header UDFs — verified on OPDN
+✅ 5 line UDFs — verified on PDN1
+Schema sync complete. 0 issues found.</pre>
+        </div>
+    </div>
+
+    <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-content">
+            <strong>Verify in SAP B1</strong><br>
+            Go to <strong>Tools → Customization Tools → User-Defined Tables — Setup</strong> and confirm:<br>
+            • <code>@GRPO_AUDIT_LOG</code> exists<br>
+            • <code>@GRPO_QC_RECORDS</code> exists<br>
+            Then check <strong>User-Defined Fields — Management</strong> → Goods Receipt PO (OPDN/PDN1).
+        </div>
+    </div>
+
+    <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-content">
+            <strong>Start the GRPO service</strong>
+            <pre>npm run start</pre>
+            Verify the service is healthy:
+            <pre>GET https://your-grpo-server:8443/health
+→ { "status": "ok", "sap": "connected", "uptime": "..." }</pre>
+        </div>
+    </div>
+
+    <div class="page-break"></div>
+
+    <!-- ═══════════════════════════════════════════════════════════════════════ -->
+    <!-- SECTION 6: Mobile Devices                                             -->
+    <!-- ═══════════════════════════════════════════════════════════════════════ -->
+    <h2>6. Mobile Device Enrollment</h2>
+
+    <h3>6.1 Supported Devices</h3>
+    <table>
+        <tr>
+            <th>Platform</th>
+            <th>Minimum OS</th>
+            <th>Tested Models</th>
+        </tr>
+        <tr>
+            <td>Android</td>
+            <td>Android 11+</td>
+            <td>Zebra TC52x, Samsung XCover6 Pro</td>
+        </tr>
+        <tr>
+            <td>iOS</td>
+            <td>iOS 16+</td>
+            <td>iPhone 14, iPhone 15 Pro</td>
+        </tr>
+    </table>
+
+    <h3>6.2 Barcode Scanner Pairing</h3>
+    <table>
+        <tr>
+            <th>Scanner</th>
+            <th>Connection</th>
+            <th>Symbologies</th>
+        </tr>
+        <tr>
+            <td>Zebra DS3678-SR</td>
+            <td>Bluetooth HID</td>
+            <td>GS1-128, DataMatrix, QR</td>
+        </tr>
+        <tr>
+            <td>Honeywell Voyager 1602g</td>
+            <td>Bluetooth HID</td>
+            <td>GS1-128, DataMatrix</td>
+        </tr>
+    </table>
+
+    <h3>6.3 App Installation</h3>
+    <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-content"><strong>Android:</strong> Install the signed APK via MDM or direct transfer. Enable
+            "Install from Unknown Sources" if not using Play Store.</div>
+    </div>
+    <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-content"><strong>iOS:</strong> Distribute via Apple Business Manager or TestFlight for pilot
+            phase.</div>
+    </div>
+    <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-content"><strong>First Launch:</strong> Enter the GRPO Service URL
+            (<code>https://your-grpo-server:8443</code>) and log in with SAP B1 credentials.</div>
+    </div>
+
+    <div class="page-break"></div>
+
+    <!-- ═══════════════════════════════════════════════════════════════════════ -->
+    <!-- SECTION 7: PO Configuration                                           -->
+    <!-- ═══════════════════════════════════════════════════════════════════════ -->
+    <h2>7. Purchase Order Configuration</h2>
+
+    <div class="callout callout-warning">
+        <div class="callout-title">🔴 Critical — PO-Driven Requirement</div>
+        The GRPO module operates in <strong>PO-Driven mode ONLY</strong>. Random product scanning is disabled. Every
+        GRPO must reference a source Purchase Order via <code>BaseType=22</code>, <code>BaseEntry</code>, and
+        <code>BaseLine</code>.
+    </div>
+
+    <h3>7.1 Purchase Order Requirements</h3>
+    <ul>
+        <li>PO must have status <strong>"Open"</strong> to appear in the mobile app</li>
+        <li>All line items must have valid <strong>Item Codes</strong> that exist in the Item Master</li>
+        <li>Each item must have a <strong>GTIN barcode</strong> registered in SAP B1 (OBCD table)</li>
+        <li>Batch-managed items must have <strong>"Manage Item by Batches" = Yes</strong></li>
+    </ul>
+
+    <h3>7.2 How It Works</h3>
+    <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-content"><strong>Operator selects a PO</strong> from the mobile PO Selection Screen. Only Open
+            POs are shown.</div>
+    </div>
+    <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-content"><strong>Scanner unlocks.</strong> The operator scans each carton's GS1-128 barcode.
+        </div>
+    </div>
+    <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-content"><strong>Strict matching:</strong> The scanned GTIN is validated against the PO's line
+            items. If the item is not on the PO → <strong>HARD BLOCK</strong> with message: <em>"Item not on this PO —
+                Reject Delivery"</em>.</div>
+    </div>
+    <div class="step">
+        <div class="step-num">4</div>
+        <div class="step-content"><strong>GRPO posted</strong> with BaseEntry/BaseLine referencing the source PO. SAP B1
+            automatically reduces the PO's open quantities.</div>
+    </div>
+
+    <h3>7.3 GRPO Document Structure</h3>
+    <pre>{
+  "CardCode": "V-MED-001",
+  "DocDate": "2026-03-05",
+  "U_GRPO_ReceivedBy": "Mohammed Al-Rashid",
+  "U_GRPO_QcStatus": "Passed",
+  "U_GRPO_SaberCertId": "SABER-2026-45891",
+  "DocumentLines": [
+    {
+      "BaseType": 22,
+      "BaseEntry": 1001,
+      "BaseLine": 0,
+      "ItemCode": "SUTURE-001",
+      "Quantity": 100,
+      "BatchNumbers": [{
+        "BatchNumber": "BT-2026-0301",
+        "ExpiryDate": "2028-06-15",
+        "Quantity": 100
+      }],
+      "U_GRPO_UdiDi": "08806555019001",
+      "U_GRPO_Sterility": "S",
+      "U_GRPO_GtinScanned": "08806555019001"
+    }
+  ]
+}</pre>
+
+    <div class="page-break"></div>
+
+    <!-- ═══════════════════════════════════════════════════════════════════════ -->
+    <!-- SECTION 8: Barcode Labels                                             -->
+    <!-- ═══════════════════════════════════════════════════════════════════════ -->
+    <h2>8. Barcode Label Requirements</h2>
+
+    <h3>8.1 Supported Formats</h3>
+    <table>
+        <tr>
+            <th>Format</th>
+            <th>AI Codes Parsed</th>
+            <th>Priority</th>
+        </tr>
+        <tr>
+            <td>GS1-128</td>
+            <td>(01) GTIN, (10) Batch, (17) Expiry, (21) Serial</td>
+            <td>Primary</td>
+        </tr>
+        <tr>
+            <td>GS1 DataMatrix</td>
+            <td>Same as above</td>
+            <td>Primary</td>
+        </tr>
+        <tr>
+            <td>QR Code (GS1)</td>
+            <td>Same as above</td>
+            <td>Secondary</td>
+        </tr>
+    </table>
+
+    <h3>8.2 Example GS1-128 Barcode Content</h3>
+    <pre>(01)08806555019001(10)BT-2026-0301(17)280615(21)SRL-0001</pre>
+    <p>Breakdown:</p>
+    <table>
+        <tr>
+            <th>AI</th>
+            <th>Field</th>
+            <th>Value</th>
+        </tr>
+        <tr>
+            <td>(01)</td>
+            <td>GTIN-14</td>
+            <td>08806555019001</td>
+        </tr>
+        <tr>
+            <td>(10)</td>
+            <td>Batch/Lot</td>
+            <td>BT-2026-0301</td>
+        </tr>
+        <tr>
+            <td>(17)</td>
+            <td>Expiry (YYMMDD)</td>
+            <td>280615 → 2028-06-15</td>
+        </tr>
+        <tr>
+            <td>(21)</td>
+            <td>Serial Number</td>
+            <td>SRL-0001</td>
+        </tr>
+    </table>
+
+    <div class="callout callout-info">
+        <div class="callout-title">ℹ️ Vendor Label Requirement</div>
+        Instruct your suppliers to print GS1-128 or GS1 DataMatrix barcodes on all carton labels. The barcode must
+        contain at minimum AI (01) GTIN and AI (10) Batch. Expiry and Serial are recommended for full UDI compliance.
+    </div>
+
+    <div class="page-break"></div>
+
+    <!-- ═══════════════════════════════════════════════════════════════════════ -->
+    <!-- SECTION 9: SABER                                                      -->
+    <!-- ═══════════════════════════════════════════════════════════════════════ -->
+    <h2>9. SABER API Integration</h2>
+    <p>The GRPO module validates every inbound shipment against the <strong>SABER Platform</strong> (Saudi Standards,
+        Metrology and Quality Organization) before allowing a GRPO to be posted.</p>
+
+    <h3>9.1 Configuration</h3>
+    <table>
+        <tr>
+            <th>Setting</th>
+            <th>Value</th>
+        </tr>
+        <tr>
+            <td>SABER_API_URL</td>
+            <td><code>https://api.saber.sa/v1</code></td>
+        </tr>
+        <tr>
+            <td>SABER_API_KEY</td>
+            <td>Obtain from <a href="https://saber.sa">saber.sa</a> portal</td>
+        </tr>
+        <tr>
+            <td>SABER_MODE</td>
+            <td><code>strict</code> (blocks invalid) or <code>warn</code> (logs only)</td>
+        </tr>
+    </table>
+
+    <h3>9.2 Validation Flow</h3>
+    <ul>
+        <li><strong>Valid Certificate</strong> → Green badge → GRPO proceeds</li>
+        <li><strong>Expired Certificate</strong> → Red block → GRPO blocked, procurement team alerted</li>
+        <li><strong>Not Found</strong> → Yellow warning → GRPO held for manual review</li>
+    </ul>
+
+    <div class="callout callout-success">
+        <div class="callout-title">✅ For pilot testing</div>
+        Set <code>SABER_MODE=warn</code> during the pilot phase to log validation results without blocking. Switch to
+        <code>strict</code> for production.
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════════════════ -->
+    <!-- SECTION 10: SFDA                                                      -->
+    <!-- ═══════════════════════════════════════════════════════════════════════ -->
+    <h2>10. SFDA Reporting Configuration</h2>
+    <p>The module generates daily compliance exports for the Saudi Food & Drug Authority (SFDA) Saudi Device
+        Identification (Saudi-DI) database.</p>
+
+    <table>
+        <tr>
+            <th>Setting</th>
+            <th>Value</th>
+            <th>Description</th>
+        </tr>
+        <tr>
+            <td>SFDA_EXPORT_CRON</td>
+            <td><code>0 2 * * *</code></td>
+            <td>Daily at 2:00 AM</td>
+        </tr>
+        <tr>
+            <td>SFDA_EXPORT_FORMAT</td>
+            <td><code>XML</code></td>
+            <td>XML or CSV</td>
+        </tr>
+        <tr>
+            <td>SFDA_EXPORT_PATH</td>
+            <td><code>/exports/sfda/</code></td>
+            <td>Local export directory</td>
+        </tr>
+        <tr>
+            <td>SFDA_IDEMPOTENT</td>
+            <td><code>true</code></td>
+            <td>Prevents duplicate transmissions</td>
+        </tr>
+    </table>
+
+    <div class="page-break"></div>
+
+    <!-- ═══════════════════════════════════════════════════════════════════════ -->
+    <!-- SECTION 11: User Roles                                                -->
+    <!-- ═══════════════════════════════════════════════════════════════════════ -->
+    <h2>11. User Roles & Permissions</h2>
+    <table>
+        <tr>
+            <th>Role</th>
+            <th>SAP B1 Permissions</th>
+            <th>GRPO Module Access</th>
+        </tr>
+        <tr>
+            <td><strong>Warehouse Operator</strong></td>
+            <td>Goods Receipt PO (Add)</td>
+            <td>PO Selection, Scanner, Putaway</td>
+        </tr>
+        <tr>
+            <td><strong>QC Inspector</strong></td>
+            <td>Goods Receipt PO (Add), Inventory (Edit)</td>
+            <td>QC Inspection, Evidence Capture, Batch Lock/Release</td>
+        </tr>
+        <tr>
+            <td><strong>Warehouse Supervisor</strong></td>
+            <td>Full Inventory, PO (View)</td>
+            <td>All Operator features + Recall Query + Reports</td>
+        </tr>
+        <tr>
+            <td><strong>Compliance Officer</strong></td>
+            <td>Read-only on all modules</td>
+            <td>Audit Log Viewer, SFDA Export, Hash Chain Verifier</td>
+        </tr>
+        <tr>
+            <td><strong>System Admin</strong></td>
+            <td>Super User</td>
+            <td>Full access + Configuration + User Management</td>
+        </tr>
+    </table>
+
+    <!-- ═══════════════════════════════════════════════════════════════════════ -->
+    <!-- SECTION 12: Go-Live Checklist                                         -->
+    <!-- ═══════════════════════════════════════════════════════════════════════ -->
+    <h2>12. Go-Live Checklist</h2>
+
+    <h3>Pre-Go-Live (Day −7 to −1)</h3>
+    <ul class="checklist">
+        <li>Full SAP B1 database backup taken</li>
+        <li>UDTs created and verified (@GRPO_AUDIT_LOG, @GRPO_QC_RECORDS)</li>
+        <li>UDFs created and verified (8 header + 5 line)</li>
+        <li>GRPO Service deployed and <code>/health</code> responding</li>
+        <li>Service Layer connectivity confirmed</li>
+        <li>DI API connection pool tested (5 concurrent)</li>
+        <li>Item Masters updated: batch management enabled, GTINs registered</li>
+        <li>Test POs created with valid item lines</li>
+        <li>Mobile app installed on all pilot devices</li>
+        <li>Bluetooth scanners paired and tested</li>
+        <li>SABER API key configured (warn mode for pilot)</li>
+        <li>All operators trained on PO-driven receiving flow</li>
+    </ul>
+
+    <h3>Go-Live Day (Day 0)</h3>
+    <ul class="checklist">
+        <li>Switch GRPO service to production mode</li>
+        <li>Verify first real PO appears in mobile app</li>
+        <li>Complete first live scan-to-putaway cycle</li>
+        <li>Verify GRPO appears in SAP B1 with correct BaseEntry/BaseLine</li>
+        <li>Confirm PO open quantities reduced correctly</li>
+        <li>Check audit log entry created with valid hash chain</li>
+        <li>Test QC hold routing (if applicable)</li>
+        <li>Notify operations team: <strong>"GRPO Module is LIVE"</strong></li>
+    </ul>
+
+    <h3>Post-Go-Live (Day 1–30 Hypercare)</h3>
+    <ul class="checklist">
+        <li>Monitor sync latency daily (target: &lt; 5 seconds)</li>
+        <li>Review daily SFDA export completeness</li>
+        <li>Check for failed syncs or connection drops</li>
+        <li>Conduct mock recall drill within first 7 days</li>
+        <li>Achieve 90% operator adoption by day 7</li>
+        <li>Switch SABER mode from <code>warn</code> to <code>strict</code> after day 14</li>
+        <li>Hand over hash chain verifier to QA/Compliance team by day 30</li>
+    </ul>
+
+    <div class="page-break"></div>
+
+    <!-- ═══════════════════════════════════════════════════════════════════════ -->
+    <!-- SECTION 13: Troubleshooting                                           -->
+    <!-- ═══════════════════════════════════════════════════════════════════════ -->
+    <h2>13. Troubleshooting & Support</h2>
+
+    <table>
+        <tr>
+            <th>Issue</th>
+            <th>Cause</th>
+            <th>Resolution</th>
+        </tr>
+        <tr>
+            <td>POs not appearing in app</td>
+            <td>PO status is "Closed" or service can't reach Service Layer</td>
+            <td>Verify PO status in SAP B1. Check <code>SERVICE_LAYER_URL</code> connectivity.</td>
+        </tr>
+        <tr>
+            <td>Scan returns "Item not on this PO"</td>
+            <td>Item's GTIN not registered in SAP B1 barcodes table</td>
+            <td>Add GTIN to item via <strong>Inventory → Item Master Data → Bar Codes tab</strong></td>
+        </tr>
+        <tr>
+            <td>GRPO post fails with "Base document error"</td>
+            <td>PO line already fully received, or PO was closed</td>
+            <td>Check PO's remaining open quantities in SAP B1</td>
+        </tr>
+        <tr>
+            <td>Sync timeout (&gt; 5s)</td>
+            <td>Network latency or DI API pool exhausted</td>
+            <td>Check network route. Increase <code>DI_POOL_SIZE</code> if needed.</td>
+        </tr>
+        <tr>
+            <td>UDF not found error</td>
+            <td>Schema sync was not run on this database</td>
+            <td>Run <code>npm run schema:sync</code> and verify output</td>
+        </tr>
+        <tr>
+            <td>SABER validation fails</td>
+            <td>API key expired or certificate not found</td>
+            <td>Verify SABER portal credentials. Check certificate status.</td>
+        </tr>
+        <tr>
+            <td>Scanner not connecting</td>
+            <td>Bluetooth HID pairing issue</td>
+            <td>Reset scanner, re-pair. Ensure only one device paired at a time.</td>
+        </tr>
+        <tr>
+            <td>Offline scans not syncing</td>
+            <td>Device reconnected but sync queue stalled</td>
+            <td>Force sync via app menu. Check GRPO service logs.</td>
+        </tr>
+    </table>
+
+    <h3>Support Contacts</h3>
+    <table>
+        <tr>
+            <th>Level</th>
+            <th>Contact</th>
+            <th>Response Time</th>
+        </tr>
+        <tr>
+            <td>L1 — App Issues</td>
+            <td>IT Helpdesk</td>
+            <td>4 hours</td>
+        </tr>
+        <tr>
+            <td>L2 — SAP Integration</td>
+            <td>SAP B1 Consultant</td>
+            <td>8 hours</td>
+        </tr>
+        <tr>
+            <td>L3 — GRPO Module</td>
+            <td>Antigravity Engineering</td>
+            <td>24 hours</td>
+        </tr>
+    </table>
+
+    <!-- ═══════════════════════════════════════════════════════════════════════ -->
+    <!-- FOOTER                                                                -->
+    <!-- ═══════════════════════════════════════════════════════════════════════ -->
+    <div class="footer">
+        GRPO Module — SAP Business One V10.0 Integration & Onboarding Guide v1.0<br>
+        Confidential — © 2026 Antigravity Engineering. All rights reserved.
+    </div>
+
+</body>
+
+</html>

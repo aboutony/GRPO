@@ -1,0 +1,99 @@
+# ═══════════════════════════════════════════════════════════════════════
+# GRPO Module — Docker Compose (Client Distribution)
+#
+# This version uses PRE-BUILT images (no GitHub access required).
+#
+# Usage:
+#   1. Copy .env.template → .env and fill in your SAP B1 details
+#   2. Load the image:  docker load -i grpo-service.tar
+#   3. Start:           docker compose up -d
+#   4. Check health:    curl http://localhost:8443/health
+# ═══════════════════════════════════════════════════════════════════════
+
+version: "3.9"
+
+services:
+  # ── GRPO Core Service ─────────────────────────────────────────────
+  grpo-service:
+    image: grpo-service:1.0.0
+    container_name: grpo-service
+    restart: unless-stopped
+    ports:
+      - "${GRPO_PORT:-8443}:8443"
+    env_file:
+      - .env
+    environment:
+      - NODE_ENV=production
+      - TZ=Asia/Riyadh
+    volumes:
+      - grpo-data:/app/data
+      - grpo-logs:/app/logs
+      - grpo-exports:/app/exports
+    networks:
+      - grpo-network
+    healthcheck:
+      test: [ "CMD", "node", "healthcheck.js" ]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+    deploy:
+      resources:
+        limits:
+          cpus: "4.0"
+          memory: 8G
+        reservations:
+          cpus: "2.0"
+          memory: 4G
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "50m"
+        max-file: "5"
+
+  # ── Schema Provisioner (runs once on first start) ─────────────────
+  grpo-schema-sync:
+    image: grpo-service:1.0.0
+    container_name: grpo-schema-sync
+    env_file:
+      - .env
+    environment:
+      - NODE_ENV=production
+    command: [ "node", "dist/schema/schema-sync-standalone.js" ]
+    networks:
+      - grpo-network
+    restart: "no"
+    depends_on:
+      grpo-service:
+        condition: service_started
+
+  # ── SFDA Export Scheduler (daily cron) ─────────────────────────────
+  grpo-sfda-export:
+    image: grpo-service:1.0.0
+    container_name: grpo-sfda-export
+    env_file:
+      - .env
+    environment:
+      - NODE_ENV=production
+      - TZ=Asia/Riyadh
+    command: [ "node", "dist/regulatory/sfda/sfda-export-cron.js" ]
+    volumes:
+      - grpo-exports:/app/exports
+    networks:
+      - grpo-network
+    restart: unless-stopped
+    depends_on:
+      grpo-service:
+        condition: service_healthy
+
+volumes:
+  grpo-data:
+    driver: local
+  grpo-logs:
+    driver: local
+  grpo-exports:
+    driver: local
+
+networks:
+  grpo-network:
+    driver: bridge
