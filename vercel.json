@@ -22,6 +22,10 @@
         {
             "source": "/dashboard",
             "destination": "/dashboard.html"
+        },
+        {
+            "source": "/guide",
+            "destination": "/sap-b1-guide.html"
         }
     ],
     "headers": [
