@@ -1,10 +1,13 @@
 # ═══════════════════════════════════════════════════════════════════════
-# GRPO Module — Docker Compose (Production)
+# GRPO Module — Docker Compose (Client Distribution)
+#
+# This version uses PRE-BUILT images (no GitHub access required).
 #
 # Usage:
 #   1. Copy .env.template → .env and fill in your SAP B1 details
-#   2. docker-compose up -d
-#   3. Check health: curl https://localhost:8443/health
+#   2. Load the image:  docker load -i grpo-service.tar
+#   3. Start:           docker compose up -d
+#   4. Check health:    curl http://localhost:8443/health
 # ═══════════════════════════════════════════════════════════════════════
 
 version: "3.9"
@@ -12,9 +15,7 @@ version: "3.9"
 services:
   # ── GRPO Core Service ─────────────────────────────────────────────
   grpo-service:
-    build:
-      context: ../..
-      dockerfile: deploy/docker/Dockerfile
+    image: grpo-service:1.0.0
     container_name: grpo-service
     restart: unless-stopped
     ports:
@@ -25,7 +26,6 @@ services:
       - NODE_ENV=production
       - TZ=Asia/Riyadh
     volumes:
-      # Persistent storage for offline queue and logs
       - grpo-data:/app/data
       - grpo-logs:/app/logs
       - grpo-exports:/app/exports
@@ -53,9 +53,7 @@ services:
 
   # ── Schema Provisioner (runs once on first start) ─────────────────
   grpo-schema-sync:
-    build:
-      context: ../..
-      dockerfile: deploy/docker/Dockerfile
+    image: grpo-service:1.0.0
     container_name: grpo-schema-sync
     env_file:
       - .env
@@ -71,9 +69,7 @@ services:
 
   # ── SFDA Export Scheduler (daily cron) ─────────────────────────────
   grpo-sfda-export:
-    build:
-      context: ../..
-      dockerfile: deploy/docker/Dockerfile
+    image: grpo-service:1.0.0
     container_name: grpo-sfda-export
     env_file:
       - .env

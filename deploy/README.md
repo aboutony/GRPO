@@ -1,76 +1,75 @@
-# GRPO Module — Client Distribution Package
+# GRPO Module — Client Installation Package
 
-## Quick Start
+> **No source code or GitHub access required.** Everything runs from pre-built Docker images.
 
-### Option A: Docker (Recommended)
+## Quick Start (3 Steps)
 
 ```bash
-# 1. Configure
+# Step 1: Configure your SAP B1 connection
 cp docker/.env.template docker/.env
-nano docker/.env   # Fill in your SAP B1 details
+nano docker/.env              # Fill in SAP_SERVER, SAP_USER, etc.
 
-# 2. Install
+# Step 2: Run the installer
 chmod +x install.sh
 ./install.sh
+
+# Step 3: Verify
+curl http://localhost:8443/health
 ```
 
-### Option B: Manual Setup
-
-```bash
-# 1. Run schema sync
-cd schema/
-cp ../.env.template .env
-nano .env   # Fill in your SAP B1 details
-node schema-sync-standalone.js
-
-# 2. Start with Docker Compose
-cd ../docker/
-docker compose up -d
-```
+That's it. The service will connect to your SAP B1, create the required schema, and start receiving.
 
 ---
 
 ## Package Contents
 
-| Folder | Contents |
-|--------|----------|
-| `docker/` | Dockerfile, docker-compose.yml, .env.template |
-| `schema/` | Standalone schema sync script (zero dependencies) |
-| `mobile/android/` | APK build script |
-| `mobile/ios/` | IPA build script |
-| `docs/` | SAP B1 Integration Guide (PDF-ready) |
-| `install.sh` | One-command installer |
+```
+grpo-dist-v1.0.0/
+├── install.sh                        ← Run this (one-command setup)
+├── README.md                         ← You are here
+├── docker/
+│   ├── grpo-service.tar              ← Pre-built Docker image (~200 MB)
+│   ├── docker-compose.yml            ← Service orchestration
+│   ├── .env.template                 ← SAP config template
+│   ├── entrypoint.sh                 ← Container startup
+│   └── healthcheck.js                ← Health monitor
+├── schema/
+│   └── schema-sync-standalone.js     ← SAP B1 schema setup (standalone)
+├── mobile/
+│   ├── android/build-apk.sh          ← Android APK build
+│   └── ios/build-ipa.sh              ← iOS IPA build
+└── docs/
+    └── sap-b1-guide.html             ← Full integration guide (save as PDF)
+```
 
 ## Prerequisites
 
-- **Server**: Docker + Docker Compose
-- **SAP B1**: Version 10.0 FP 2305+, Service Layer enabled
-- **Network**: Server must reach SAP B1 on port 50000 (Service Layer)
-- **Mobile**: Android 11+ or iOS 16+ devices
+| Requirement | Minimum |
+|-------------|---------|
+| Docker | 24.0+ |
+| Docker Compose | v2.20+ |
+| SAP B1 | 10.0 FP 2305+ |
+| Service Layer | Enabled (HTTPS, port 50000) |
+| Network | Server must reach SAP B1 |
 
-## Schema Sync (Standalone)
+## Commands
 
-The schema script creates 2 UDTs + 13 UDFs in your SAP B1 database.
-It requires **only Node.js** — no other dependencies.
-
-```bash
-# Check what would be created (no changes)
-node schema/schema-sync-standalone.js --check-only
-
-# Create all tables and fields
-node schema/schema-sync-standalone.js
-```
+| Command | Description |
+|---------|-------------|
+| `./install.sh` | Full setup (first time) |
+| `cd docker && docker compose up -d` | Start services |
+| `cd docker && docker compose down` | Stop services |
+| `cd docker && docker compose logs -f` | View live logs |
+| `node schema/schema-sync-standalone.js --check-only` | Verify SAP schema |
 
 ## Support
 
-| Level | Contact | SLA |
-|-------|---------|-----|
-| L1 | IT Helpdesk | 4h |
-| L2 | SAP B1 Consultant | 8h |
-| L3 | Antigravity Engineering | 24h |
+| Level | Contact | Response |
+|-------|---------|----------|
+| L1 — App issues | IT Helpdesk | 4 hours |
+| L2 — SAP config | SAP Consultant | 8 hours |
+| L3 — GRPO module | Antigravity Engineering | 24 hours |
 
 ---
 
-**Version**: 1.0.0  
-**SAP B1**: 10.0 FP 2305+  
-**Date**: March 2026
+**Version 1.0.0** · SAP Business One V10.0 · March 2026
