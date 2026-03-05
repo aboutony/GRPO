@@ -40,3 +40,16 @@ export { ScanResultCard } from './flow/ScanResultCard';
 export { PutawayScreen } from './flow/PutawayScreen';
 export { ManualEntryModal } from './flow/ManualEntryModal';
 export type { POLineSuggestion } from './flow/ManualEntryModal';
+
+// ── PO-Driven Receipting (Sprint 2.2b) ───────────────────────────────────────
+export { createPOSessionManager } from './po/po-session';
+export type { POHeader, POLine, POSession, PODataSource, SessionReceiptLine } from './po/po-session';
+
+export { matchScanToPO, validateQuantity } from './po/po-item-matcher';
+export type { MatchResult, MismatchReason } from './po/po-item-matcher';
+
+export { buildDraftGRPO, validateDraft } from './po/draft-grpo-builder';
+export type { GrpoPayload, GrpoPayloadLine, DraftValidation } from './po/draft-grpo-builder';
+
+export { POSelectionScreen } from './po/POSelectionScreen';
+export { POLineStatus } from './po/POLineStatus';

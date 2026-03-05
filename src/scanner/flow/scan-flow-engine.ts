@@ -14,7 +14,9 @@ import type { ScanResult } from '../models/scan-result';
 // ── Flow States ──────────────────────────────────────────────────────────────
 
 export enum FlowState {
-    /** Waiting to start — initial state */
+    /** PO Selection — scanner LOCKED until a PO is chosen (Sprint 2.2b) */
+    PoSelection = 'PO_SELECTION',
+    /** Waiting to start — PO selected, ready to scan */
     Idle = 'IDLE',
     /** Camera active, waiting for barcode detection */
     Scanning = 'SCANNING',
@@ -56,6 +58,13 @@ export interface FlowStateData {
     scanResult: ScanResult | null;
     putawayInfo: PutawayInfo | null;
     validationErrors: string[];
+    /** Active PO context — null = scanner locked (Sprint 2.2b) */
+    activePO: {
+        docEntry: number;
+        docNum: number;
+        cardCode: string;
+        cardName: string;
+    } | null;
     /** PO line match results */
     poMatch: {
         poEntry: number;
@@ -72,6 +81,8 @@ export interface FlowStateData {
 // ── Flow Actions ─────────────────────────────────────────────────────────────
 
 export type FlowAction =
+    | { type: 'SELECT_PO'; po: NonNullable<FlowStateData['activePO']> }  // Sprint 2.2b: PO gatekeeper
+    | { type: 'DESELECT_PO' }       // Sprint 2.2b: Return to PO selection
     | { type: 'START_SCAN' }
     | { type: 'BARCODE_DETECTED'; result: ScanResult }
     | { type: 'MANUAL_SUBMIT'; result: ScanResult }
@@ -88,10 +99,11 @@ export type FlowAction =
 // ── State Machine Reducer ────────────────────────────────────────────────────
 
 const INITIAL_STATE: FlowStateData = {
-    state: FlowState.Idle,
+    state: FlowState.PoSelection,  // Sprint 2.2b: Start locked
     scanResult: null,
     putawayInfo: null,
     validationErrors: [],
+    activePO: null,  // Sprint 2.2b: No PO = scanner locked
     poMatch: null,
     qcRequired: false,
     qcEvidenceCaptured: false,
@@ -104,10 +116,29 @@ const INITIAL_STATE: FlowStateData = {
 export function flowReducer(current: FlowStateData, action: FlowAction): FlowStateData {
     switch (action.type) {
 
-        case 'START_SCAN':
+        // Sprint 2.2b: PO gatekeeper actions
+        case 'SELECT_PO':
             return {
                 ...INITIAL_STATE,
+                state: FlowState.Idle,
+                activePO: action.po,
+            };
+
+        case 'DESELECT_PO':
+            return INITIAL_STATE;  // Back to PO_SELECTION, scanner locked
+
+        case 'START_SCAN':
+            // Sprint 2.2b: BLOCKED without active PO
+            if (!current.activePO) return current;
+            return {
+                ...current,
                 state: FlowState.Scanning,
+                scanResult: null,
+                putawayInfo: null,
+                validationErrors: [],
+                poMatch: null,
+                qcRequired: false,
+                qcEvidenceCaptured: false,
             };
 
         case 'BARCODE_DETECTED':
@@ -184,7 +215,8 @@ export function flowReducer(current: FlowStateData, action: FlowAction): FlowSta
         case 'PUTAWAY_DONE':
             return {
                 ...INITIAL_STATE,
-                state: FlowState.Scanning,
+                state: FlowState.Idle,  // Sprint 2.2b: Return to Idle (PO still active)
+                activePO: current.activePO,  // Keep the PO context
             };
 
         case 'RESET':
