@@ -1,5 +1,42 @@
 {
     "buildCommand": null,
     "outputDirectory": "public",
-    "framework": null
+    "framework": null,
+    "rewrites": [
+        {
+            "source": "/app",
+            "destination": "/index.html"
+        },
+        {
+            "source": "/app/(.*)",
+            "destination": "/index.html"
+        },
+        {
+            "source": "/demo",
+            "destination": "/index.html"
+        },
+        {
+            "source": "/demo/(.*)",
+            "destination": "/index.html"
+        },
+        {
+            "source": "/dashboard",
+            "destination": "/dashboard.html"
+        }
+    ],
+    "headers": [
+        {
+            "source": "/(.*)",
+            "headers": [
+                {
+                    "key": "X-Frame-Options",
+                    "value": "SAMEORIGIN"
+                },
+                {
+                    "key": "X-Content-Type-Options",
+                    "value": "nosniff"
+                }
+            ]
+        }
+    ]
 }

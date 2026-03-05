@@ -1,300 +1,852 @@
 <!DOCTYPE html>
 <html lang="en" dir="ltr">
+
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>GRPO — Medical Device Receiving Module</title>
-  <meta name="description" content="Intelligent GRPO module for SAP Business One medical device receiving with GS1 barcode parsing, SABER regulatory validation, and SFDA compliance." />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>GRPO — PO-Driven Receiving Demo</title>
+  <meta name="description"
+    content="Interactive GRPO PO-Driven Receiving Demo — Single-scan medical device receipting with strict PO validation." />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
+    rel="stylesheet" />
   <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
     :root {
       --bg: #0A0E1A;
       --surface: #111827;
       --surface-2: #1E293B;
       --border: #1E293B;
       --text: #F9FAFB;
-      --text-muted: #94A3B8;
-      --accent: #3B82F6;
-      --accent-glow: rgba(59, 130, 246, 0.2);
+      --muted: #94A3B8;
+      --dim: #6B7280;
+      --blue: #3B82F6;
       --green: #10B981;
       --yellow: #F59E0B;
       --red: #EF4444;
       --purple: #8B5CF6;
     }
+
     body {
-      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      font-family: 'Inter', system-ui, sans-serif;
       background: var(--bg);
       color: var(--text);
       min-height: 100vh;
       overflow-x: hidden;
     }
 
-    /* ── Animated Background ─────────────────────────────────── */
-    .bg-grid {
-      position: fixed; inset: 0; z-index: 0;
-      background-image:
-        linear-gradient(rgba(59, 130, 246, 0.03) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(59, 130, 246, 0.03) 1px, transparent 1px);
-      background-size: 60px 60px;
-      animation: gridPulse 8s ease-in-out infinite;
+    /* ── Mobile Shell ───────────────────────────────────────────── */
+    .phone-frame {
+      max-width: 420px;
+      margin: 0 auto;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      position: relative;
     }
-    @keyframes gridPulse {
-      0%, 100% { opacity: 0.4; }
-      50% { opacity: 1; }
-    }
-    .glow-orb {
-      position: fixed; border-radius: 50%; filter: blur(120px);
-      z-index: 0; pointer-events: none;
-    }
-    .glow-orb-1 { width: 500px; height: 500px; background: var(--accent-glow); top: -100px; right: -100px; animation: float1 12s ease-in-out infinite; }
-    .glow-orb-2 { width: 400px; height: 400px; background: rgba(16, 185, 129, 0.08); bottom: -100px; left: -100px; animation: float2 15s ease-in-out infinite; }
-    @keyframes float1 { 0%, 100% { transform: translate(0, 0); } 50% { transform: translate(-60px, 40px); } }
-    @keyframes float2 { 0%, 100% { transform: translate(0, 0); } 50% { transform: translate(40px, -60px); } }
 
-    /* ── Layout ──────────────────────────────────────────────── */
-    .container { position: relative; z-index: 1; max-width: 1100px; margin: 0 auto; padding: 40px 24px; }
+    /* ── Header Bar ────────────────────────────────────────────── */
+    .header-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border);
+      background: var(--surface);
+    }
 
-    /* ── Header ──────────────────────────────────────────────── */
-    .header { text-align: center; margin-bottom: 60px; }
-    .badge {
-      display: inline-flex; align-items: center; gap: 6px;
-      padding: 6px 16px; border-radius: 100px;
-      background: var(--accent-glow); border: 1px solid rgba(59, 130, 246, 0.3);
-      font-size: 12px; font-weight: 600; color: var(--accent);
-      text-transform: uppercase; letter-spacing: 0.05em;
-      margin-bottom: 24px;
+    .header-bar .title {
+      font-size: 16px;
+      font-weight: 800;
     }
-    .badge .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); animation: pulse 2s infinite; }
-    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
-    h1 {
-      font-size: clamp(2.5rem, 6vw, 4rem); font-weight: 900;
-      line-height: 1.1; margin-bottom: 16px;
-      background: linear-gradient(135deg, #F9FAFB 0%, #94A3B8 100%);
-      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-    }
-    h1 span {
-      background: linear-gradient(135deg, var(--accent) 0%, #818CF8 100%);
-      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-    }
-    .subtitle { font-size: 18px; color: var(--text-muted); max-width: 620px; margin: 0 auto; line-height: 1.6; }
 
-    /* ── Sprint Grid ─────────────────────────────────────────── */
-    .sprint-grid {
-      display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-      gap: 16px; margin-bottom: 48px;
+    .header-bar .subtitle {
+      font-size: 11px;
+      color: var(--dim);
     }
-    .sprint-card {
+
+    .header-bar .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+
+      0%,
+      100% {
+        opacity: 1;
+      }
+
+      50% {
+        opacity: 0.4;
+      }
+    }
+
+    /* ── Content ───────────────────────────────────────────────── */
+    .content {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px 20px;
+    }
+
+    /* ── Bottom Nav ────────────────────────────────────────────── */
+    .bottom-nav {
+      display: flex;
+      border-top: 1px solid var(--border);
+      background: var(--surface);
+      padding: 8px 0;
+    }
+
+    .nav-item {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+      padding: 8px 0;
+      cursor: pointer;
+      transition: all 0.2s;
+      border: none;
+      background: none;
+      color: var(--dim);
+      font-size: 10px;
+      font-family: inherit;
+      font-weight: 600;
+    }
+
+    .nav-item.active {
+      color: var(--blue);
+    }
+
+    .nav-item .icon {
+      font-size: 20px;
+    }
+
+    /* ── Screen: PO Selection ──────────────────────────────────── */
+    .search-box {
+      width: 100%;
+      padding: 14px 14px 14px 42px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text);
+      font-size: 14px;
+      outline: none;
+      font-family: inherit;
+      margin-bottom: 16px;
+    }
+
+    .search-box:focus {
+      border-color: var(--blue);
+    }
+
+    .search-wrap {
+      position: relative;
+    }
+
+    .search-icon {
+      position: absolute;
+      left: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 16px;
+      color: var(--dim);
+      pointer-events: none;
+    }
+
+    .po-card {
+      width: 100%;
+      text-align: left;
+      padding: 16px;
+      margin-bottom: 10px;
+      border-radius: 14px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      cursor: pointer;
+      transition: all 0.2s;
+      font-family: inherit;
+    }
+
+    .po-card:hover {
+      border-color: var(--blue);
+      background: var(--surface-2);
+      transform: translateY(-1px);
+    }
+
+    .po-card .po-num {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .po-card .vendor {
+      font-size: 13px;
+      color: var(--muted);
+      margin-top: 2px;
+    }
+
+    .po-card .meta {
+      display: flex;
+      gap: 16px;
+      margin-top: 10px;
+      font-size: 12px;
+      color: var(--dim);
+    }
+
+    .po-card .badge {
+      padding: 4px 10px;
+      border-radius: 8px;
+      font-size: 11px;
+      font-weight: 700;
+      background: rgba(59, 130, 246, 0.15);
+      color: var(--blue);
+    }
+
+    .po-card .items-preview {
+      margin-top: 10px;
+      padding: 8px 10px;
+      border-radius: 8px;
+      background: var(--bg);
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    .lock-banner {
+      padding: 12px 20px;
+      text-align: center;
+      font-size: 12px;
+      color: var(--red);
+      font-weight: 600;
+      border-top: 1px solid var(--border);
+    }
+
+    /* ── Screen: Scanner HUD ───────────────────────────────────── */
+    .scanner-hud {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 4/3;
+      background: #000;
+      border-radius: 16px;
+      overflow: hidden;
+      margin-bottom: 16px;
+    }
+
+    .scanner-hud .viewfinder {
+      position: absolute;
+      inset: 20%;
+      border: 2px solid rgba(59, 130, 246, 0.6);
+      border-radius: 12px;
+    }
+
+    .scan-line {
+      position: absolute;
+      left: 20%;
+      right: 20%;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--blue), transparent);
+      animation: scanMove 2.5s ease-in-out infinite;
+    }
+
+    @keyframes scanMove {
+
+      0%,
+      100% {
+        top: 20%;
+      }
+
+      50% {
+        top: 78%;
+      }
+    }
+
+    .hud-overlay {
+      position: absolute;
+      bottom: 12px;
+      left: 12px;
+      right: 12px;
+    }
+
+    .hud-label {
+      padding: 6px 12px;
+      border-radius: 8px;
+      background: rgba(0, 0, 0, 0.7);
+      backdrop-filter: blur(8px);
+      font-size: 11px;
+      color: var(--text);
+      display: inline-block;
+    }
+
+    .po-context {
+      padding: 12px 16px;
+      border-radius: 12px;
       background: var(--surface);
       border: 1px solid var(--border);
-      border-radius: 16px; padding: 24px;
-      transition: all 0.3s ease;
-      position: relative; overflow: hidden;
-    }
-    .sprint-card:hover {
-      border-color: rgba(59, 130, 246, 0.3);
-      transform: translateY(-2px);
-      box-shadow: 0 8px 32px rgba(59, 130, 246, 0.1);
-    }
-    .sprint-card .sprint-num {
-      font-size: 11px; font-weight: 700; color: var(--accent);
-      text-transform: uppercase; letter-spacing: 0.08em;
-      margin-bottom: 8px;
-    }
-    .sprint-card h3 { font-size: 16px; font-weight: 700; margin-bottom: 8px; }
-    .sprint-card p { font-size: 13px; color: var(--text-muted); line-height: 1.5; }
-    .sprint-card .icon {
-      position: absolute; top: 20px; right: 20px;
-      font-size: 28px; opacity: 0.6;
-    }
-    .sprint-card .file-count {
-      display: inline-flex; align-items: center; gap: 4px;
-      margin-top: 12px; padding: 4px 10px;
-      border-radius: 6px; background: var(--surface-2);
-      font-size: 11px; font-weight: 600; color: var(--text-muted);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
     }
 
-    /* ── Stats Bar ───────────────────────────────────────────── */
-    .stats {
-      display: flex; justify-content: center; gap: 40px;
-      flex-wrap: wrap; margin-bottom: 48px;
-      padding: 24px; border-radius: 16px;
-      background: var(--surface); border: 1px solid var(--border);
+    .scan-btn {
+      width: 100%;
+      padding: 16px;
+      border-radius: 14px;
+      border: none;
+      background: linear-gradient(135deg, #2563EB, #3B82F6);
+      color: white;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-family: inherit;
     }
-    .stat { text-align: center; }
-    .stat .value {
-      font-size: 32px; font-weight: 800;
-      background: linear-gradient(135deg, var(--accent), var(--green));
-      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-    }
-    .stat .label { font-size: 12px; color: var(--text-muted); margin-top: 2px; text-transform: uppercase; letter-spacing: 0.05em; }
 
-    /* ── Flow Diagram ────────────────────────────────────────── */
-    .flow {
-      display: flex; align-items: center; justify-content: center;
-      flex-wrap: wrap; gap: 8px; margin-bottom: 48px;
+    .scan-btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 8px 24px rgba(59, 130, 246, 0.3);
     }
-    .flow-step {
-      padding: 8px 16px; border-radius: 8px;
-      background: var(--surface); border: 1px solid var(--border);
-      font-size: 12px; font-weight: 600;
-      white-space: nowrap; transition: all 0.3s;
-    }
-    .flow-step:hover { border-color: var(--accent); background: var(--accent-glow); }
-    .flow-arrow { color: var(--text-muted); font-size: 14px; }
 
-    /* ── Facilities ──────────────────────────────────────────── */
-    .facilities {
-      display: grid; grid-template-columns: repeat(3, 1fr);
-      gap: 16px; margin-bottom: 48px;
+    .scan-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
     }
-    @media (max-width: 700px) { .facilities { grid-template-columns: 1fr; } }
-    .facility {
-      padding: 20px; border-radius: 16px;
-      background: var(--surface); border: 1px solid var(--border);
+
+    /* ── Screen: Scan Result ───────────────────────────────────── */
+    .result-card {
+      padding: 20px;
+      border-radius: 16px;
+      border: 1px solid;
+      margin-bottom: 16px;
+    }
+
+    .result-card.success {
+      border-color: rgba(16, 185, 129, 0.3);
+      background: rgba(16, 185, 129, 0.05);
+    }
+
+    .result-card.error {
+      border-color: rgba(239, 68, 68, 0.3);
+      background: rgba(239, 68, 68, 0.05);
+    }
+
+    .result-title {
+      font-size: 18px;
+      font-weight: 800;
+      margin-bottom: 12px;
+    }
+
+    .field-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .field {
+      padding: 10px;
+      border-radius: 10px;
+      background: var(--surface);
+    }
+
+    .field .label {
+      font-size: 10px;
+      color: var(--dim);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .field .value {
+      font-size: 14px;
+      font-weight: 600;
+      margin-top: 2px;
+    }
+
+    /* ── Progress bars ─────────────────────────────────────────── */
+    .line-progress {
+      margin-bottom: 12px;
+    }
+
+    .line-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 6px;
+    }
+
+    .line-name {
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .line-count {
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .progress-bar {
+      height: 6px;
+      border-radius: 3px;
+      background: var(--surface-2);
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      border-radius: 3px;
+      transition: width 0.6s ease-out;
+    }
+
+    /* ── Mismatch block ────────────────────────────────────────── */
+    .block-card {
+      padding: 24px;
+      border-radius: 16px;
       text-align: center;
+      border: 2px solid var(--red);
+      background: rgba(239, 68, 68, 0.08);
     }
-    .facility .city { font-size: 18px; font-weight: 700; }
-    .facility .province { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
-    .facility .status {
-      display: inline-block; margin-top: 10px; padding: 4px 12px;
-      border-radius: 100px; font-size: 11px; font-weight: 700;
-    }
-    .status-active { background: rgba(16, 185, 129, 0.15); color: var(--green); }
-    .status-provisioning { background: rgba(245, 158, 11, 0.15); color: var(--yellow); }
 
-    /* ── Footer ──────────────────────────────────────────────── */
-    footer {
-      text-align: center; padding: 32px 0; font-size: 13px;
-      color: var(--text-muted); border-top: 1px solid var(--border);
+    .block-card .icon {
+      font-size: 48px;
+      margin-bottom: 12px;
     }
-    footer a { color: var(--accent); text-decoration: none; }
-    footer a:hover { text-decoration: underline; }
+
+    .block-card .title {
+      font-size: 18px;
+      font-weight: 800;
+      color: var(--red);
+    }
+
+    .block-card .desc {
+      font-size: 13px;
+      color: var(--muted);
+      margin-top: 8px;
+      line-height: 1.5;
+    }
+
+    /* ── Putaway ───────────────────────────────────────────────── */
+    .bin-display {
+      padding: 24px;
+      border-radius: 16px;
+      text-align: center;
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(16, 185, 129, 0.02));
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      margin-bottom: 16px;
+    }
+
+    .bin-display .bin-code {
+      font-size: 32px;
+      font-weight: 900;
+      color: var(--green);
+      letter-spacing: 0.05em;
+    }
+
+    .bin-display .zone {
+      font-size: 13px;
+      color: var(--muted);
+      margin-top: 4px;
+    }
+
+    .confirm-btn {
+      width: 100%;
+      padding: 16px;
+      border-radius: 14px;
+      border: none;
+      background: linear-gradient(135deg, #059669, #10B981);
+      color: white;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: inherit;
+      transition: all 0.2s;
+    }
+
+    .confirm-btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 8px 24px rgba(16, 185, 129, 0.3);
+    }
+
+    /* ── Animations ────────────────────────────────────────────── */
+    .fade-in {
+      animation: fadeIn 0.3s ease-out;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+
+      to {
+        opacity: 1;
+        transform: none;
+      }
+    }
+
+    .shake {
+      animation: shake 0.5s ease-out;
+    }
+
+    @keyframes shake {
+
+      0%,
+      100% {
+        transform: translateX(0);
+      }
+
+      15%,
+      45%,
+      75% {
+        transform: translateX(-6px);
+      }
+
+      30%,
+      60% {
+        transform: translateX(6px);
+      }
+    }
+
+    /* ── Dashboard Link ────────────────────────────────────────── */
+    .dash-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 14px;
+      border-radius: 8px;
+      font-size: 11px;
+      color: var(--blue);
+      text-decoration: none;
+      font-weight: 600;
+      border: 1px solid rgba(59, 130, 246, 0.2);
+      transition: all 0.2s;
+    }
+
+    .dash-link:hover {
+      background: rgba(59, 130, 246, 0.1);
+    }
   </style>
 </head>
+
 <body>
-  <div class="bg-grid"></div>
-  <div class="glow-orb glow-orb-1"></div>
-  <div class="glow-orb glow-orb-2"></div>
-
-  <div class="container">
+  <div class="phone-frame" id="app">
     <!-- Header -->
-    <header class="header">
-      <div class="badge"><span class="dot"></span> 9 Sprints Complete</div>
-      <h1>GRPO <span>Medical Device</span><br/>Receiving Module</h1>
-      <p class="subtitle">
-        Intelligent goods receipt for SAP Business One. Single-scan GS1 barcode capture,
-        SABER regulatory validation, SFDA compliance, and QC safety gates — deployed
-        across 3 KSA warehouses.
-      </p>
-    </header>
-
-    <!-- Stats -->
-    <div class="stats">
-      <div class="stat"><div class="value">108</div><div class="label">Source Files</div></div>
-      <div class="stat"><div class="value">13.5K</div><div class="label">Lines of Code</div></div>
-      <div class="stat"><div class="value">3</div><div class="label">KSA Facilities</div></div>
-      <div class="stat"><div class="value">19</div><div class="label">Operators</div></div>
-      <div class="stat"><div class="value">24</div><div class="label">Devices</div></div>
-    </div>
-
-    <!-- Flow -->
-    <div class="flow">
-      <div class="flow-step">📷 Scan</div><span class="flow-arrow">→</span>
-      <div class="flow-step">🔍 GS1 Parse</div><span class="flow-arrow">→</span>
-      <div class="flow-step">🛡️ SABER</div><span class="flow-arrow">→</span>
-      <div class="flow-step">🔬 QC Gate</div><span class="flow-arrow">→</span>
-      <div class="flow-step">📦 Putaway</div><span class="flow-arrow">→</span>
-      <div class="flow-step">📄 SAP Post</div><span class="flow-arrow">→</span>
-      <div class="flow-step">📋 Audit</div><span class="flow-arrow">→</span>
-      <div class="flow-step">🇸🇦 SFDA</div>
-    </div>
-
-    <!-- Sprint Grid -->
-    <div class="sprint-grid">
-      <div class="sprint-card">
-        <div class="sprint-num">Sprint 1.1 + 1.2</div>
-        <span class="icon">🏗️</span>
-        <h3>SAP B1 Foundation</h3>
-        <p>Schema provisioning (2 UDTs, 21 UDFs) and DI API Adapter with atomic transactions and circuit breaker.</p>
-        <div class="file-count">📁 34 files</div>
+    <div class="header-bar">
+      <div>
+        <div class="title">GRPO Receiving</div>
+        <div class="subtitle" id="headerSub">Select a Purchase Order</div>
       </div>
-      <div class="sprint-card">
-        <div class="sprint-num">Sprint 2.1</div>
-        <span class="icon">📡</span>
-        <h3>Mobile Sync Engine</h3>
-        <p>Offline-first with SQLite WAL, background sync worker, conflict resolution UI, and haptic feedback.</p>
-        <div class="file-count">📁 15 files</div>
-      </div>
-      <div class="sprint-card">
-        <div class="sprint-num">Sprint 2.2</div>
-        <span class="icon">📷</span>
-        <h3>Scan-First UI</h3>
-        <p>GS1-128/DataMatrix parser for single-scan extraction of GTIN, Batch, Expiry, Serial. HUD camera overlay.</p>
-        <div class="file-count">📁 12 files</div>
-      </div>
-      <div class="sprint-card">
-        <div class="sprint-num">Sprint 2.3</div>
-        <span class="icon">🔬</span>
-        <h3>QC & Quarantine</h3>
-        <p>Automated QC hold routing, evidence photo capture, defect codes, batch locking, and one-click recall.</p>
-        <div class="file-count">📁 10 files</div>
-      </div>
-      <div class="sprint-card">
-        <div class="sprint-num">Sprint 3.1</div>
-        <span class="icon">🛡️</span>
-        <h3>SABER & SFDA</h3>
-        <p>Pre-receipt certificate validation, SFDA daily export service, SHA-256 audit log hash chain.</p>
-        <div class="file-count">📁 11 files</div>
-      </div>
-      <div class="sprint-card">
-        <div class="sprint-num">Sprint 4.1</div>
-        <span class="icon">🎬</span>
-        <h3>Interactive Demo</h3>
-        <p>3-scene Story Mode with pre-loaded POs, GS1 barcodes, SABER/SAP mocks, and StoryRunner UI.</p>
-        <div class="file-count">📁 8 files</div>
-      </div>
-      <div class="sprint-card">
-        <div class="sprint-num">Sprint 5.1</div>
-        <span class="icon">🚀</span>
-        <h3>Riyadh Pilot & UAT</h3>
-        <p>10-device fleet, 12 user stories, performance monitoring (P50/P95/P99), and mock recall drill.</p>
-        <div class="file-count">📁 10 files</div>
-      </div>
-      <div class="sprint-card">
-        <div class="sprint-num">Sprint 6.1</div>
-        <span class="icon">🌐</span>
-        <h3>Nationwide Rollout</h3>
-        <p>3-facility deployment, global recall, training drills, 30-day hypercare, and compliance handover.</p>
-        <div class="file-count">📁 8 files</div>
+      <div style="display:flex;align-items:center;gap:10px;">
+        <a href="/dashboard" class="dash-link">📊 Dashboard</a>
+        <div class="status-dot" id="statusDot" style="background:var(--red);"></div>
       </div>
     </div>
 
-    <!-- Facilities -->
-    <div class="facilities">
-      <div class="facility">
-        <div style="font-size: 32px; margin-bottom: 8px;">🏢</div>
-        <div class="city">Riyadh</div>
-        <div class="province">Central Province — WH01</div>
-        <div class="status status-active">● Live</div>
-      </div>
-      <div class="facility">
-        <div style="font-size: 32px; margin-bottom: 8px;">🏭</div>
-        <div class="city">Jeddah</div>
-        <div class="province">Western Province — WH02</div>
-        <div class="status status-provisioning">◉ Provisioning</div>
-      </div>
-      <div class="facility">
-        <div style="font-size: 32px; margin-bottom: 8px;">🏗️</div>
-        <div class="city">Dammam</div>
-        <div class="province">Eastern Province — WH03</div>
-        <div class="status status-provisioning">◉ Provisioning</div>
-      </div>
-    </div>
+    <!-- Content Area -->
+    <div class="content" id="screen"></div>
 
-    <footer>
-      GRPO Medical Device Receiving Module · UNIMED &copy; 2026 · Powered by <a href="https://github.com/aboutony/GRPO" target="_blank">GitHub</a>
-    </footer>
+    <!-- Bottom Nav -->
+    <div class="bottom-nav">
+      <button class="nav-item active" id="navPO" onclick="goScreen('po')">
+        <span class="icon">📋</span>PO Select
+      </button>
+      <button class="nav-item" id="navScan" onclick="goScreen('scanner')">
+        <span class="icon">📷</span>Scanner
+      </button>
+      <button class="nav-item" id="navProgress" onclick="goScreen('progress')">
+        <span class="icon">📊</span>Progress
+      </button>
+    </div>
   </div>
+
+  <script>
+    // ── Demo Data (Hard-coded POs from SAP B1) ──────────────────────────────────
+    const POS = [
+      {
+        docEntry: 1001, docNum: 1001, cardCode: 'V-MED-001', cardName: 'MedSupply International',
+        docDate: '2026-03-05', status: 'Open',
+        lines: [
+          { lineNum: 0, itemCode: 'SUTURE-001', itemDescription: 'Surgical Sutures – Polyglycolic 3-0', gtin: '08806555019001', quantity: 100, receivedQty: 0, openQty: 100, warehouseCode: 'WH01', unitPrice: 12.50, currency: 'SAR', uomCode: 'BOX', qcRequired: false },
+          { lineNum: 1, itemCode: 'GLOVE-LTX-M', itemDescription: 'Latex Examination Gloves – Medium', gtin: '06971234560012', quantity: 500, receivedQty: 0, openQty: 500, warehouseCode: 'WH01', unitPrice: 3.20, currency: 'SAR', uomCode: 'BOX', qcRequired: false },
+        ]
+      },
+      {
+        docEntry: 1002, docNum: 1002, cardCode: 'V-MED-001', cardName: 'MedSupply International',
+        docDate: '2026-03-04', status: 'Open',
+        lines: [
+          { lineNum: 0, itemCode: 'SYRINGE-5ML', itemDescription: 'Disposable Syringe 5mL – Sterile', gtin: '07451234567890', quantity: 200, receivedQty: 50, openQty: 150, warehouseCode: 'WH01', unitPrice: 0.85, currency: 'SAR', uomCode: 'EA', qcRequired: true },
+        ]
+      },
+      {
+        docEntry: 1003, docNum: 1003, cardCode: 'V-PHARM-002', cardName: 'Gulf Pharma Distributors',
+        docDate: '2026-03-03', status: 'Open',
+        lines: [
+          { lineNum: 0, itemCode: 'BANDAGE-EL', itemDescription: 'Elastic Bandage 10cm x 4.5m', gtin: '09501234509876', quantity: 300, receivedQty: 0, openQty: 300, warehouseCode: 'WH01', unitPrice: 5.40, currency: 'SAR', uomCode: 'ROLL', qcRequired: false },
+          { lineNum: 1, itemCode: 'MASK-N95', itemDescription: 'N95 Respirator Mask – NIOSH Approved', gtin: '08901234543210', quantity: 1000, receivedQty: 200, openQty: 800, warehouseCode: 'WH01', unitPrice: 2.10, currency: 'SAR', uomCode: 'EA', qcRequired: false },
+          { lineNum: 2, itemCode: 'THERM-DIG', itemDescription: 'Digital Clinical Thermometer', gtin: '06541234567001', quantity: 50, receivedQty: 0, openQty: 50, warehouseCode: 'WH01', unitPrice: 18.00, currency: 'SAR', uomCode: 'EA', qcRequired: true },
+        ]
+      },
+    ];
+
+    // Simulated barcodes → GTIN mapping
+    const DEMO_BARCODES = {
+      'suture': { gtin: '08806555019001', batch: 'BT-2026-0301', expiry: '2028-06-15', serial: 'SRL-0001' },
+      'glove': { gtin: '06971234560012', batch: 'BT-2026-0288', expiry: '2027-12-01', serial: 'SRL-0002' },
+      'syringe': { gtin: '07451234567890', batch: 'BT-2026-0310', expiry: '2028-03-20', serial: 'SRL-0003' },
+      'bandage': { gtin: '09501234509876', batch: 'BT-2026-0295', expiry: '2029-01-10', serial: 'SRL-0004' },
+      'mask': { gtin: '08901234543210', batch: 'BT-2026-0305', expiry: '2027-08-30', serial: 'SRL-0005' },
+      'therm': { gtin: '06541234567001', batch: 'BT-2026-0312', expiry: '2030-02-28', serial: 'SRL-0006' },
+      'unknown': { gtin: '00000000000000', batch: 'BT-UNKNOWN', expiry: '2025-01-01', serial: 'SRL-9999' },
+    };
+
+    // ── State ─────────────────────────────────────────────────────────────────────
+    let activePO = null;
+    let sessionScans = [];  // { poLineNum, itemCode, gtin, batch, qty, scannedAt }
+    let currentScreen = 'po';
+
+    // ── Render Engine ─────────────────────────────────────────────────────────────
+    function goScreen(name) {
+      if (name === 'scanner' && !activePO) { goScreen('po'); return; }
+      currentScreen = name;
+      document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+      document.getElementById('nav' + name.charAt(0).toUpperCase() + name.slice(1))?.classList.add('active');
+      render();
+    }
+
+    function render() {
+      const el = document.getElementById('screen');
+      const dot = document.getElementById('statusDot');
+      const sub = document.getElementById('headerSub');
+
+      if (currentScreen === 'po') {
+        dot.style.background = activePO ? 'var(--green)' : 'var(--red)';
+        sub.textContent = activePO ? `PO-${activePO.docNum} Active` : 'Select a Purchase Order';
+        el.innerHTML = renderPOSelection();
+      } else if (currentScreen === 'scanner') {
+        dot.style.background = 'var(--green)';
+        sub.textContent = `Scanning — PO-${activePO.docNum}`;
+        el.innerHTML = renderScanner();
+      } else if (currentScreen === 'progress') {
+        sub.textContent = activePO ? `PO-${activePO.docNum} Progress` : 'No active PO';
+        el.innerHTML = activePO ? renderProgress() : '<div style="text-align:center;padding:60px 0;color:var(--dim);">Select a PO first</div>';
+      } else if (currentScreen === 'result') {
+        el.innerHTML = renderResult();
+      } else if (currentScreen === 'mismatch') {
+        el.innerHTML = renderMismatch();
+      } else if (currentScreen === 'putaway') {
+        el.innerHTML = renderPutaway();
+      }
+    }
+
+    // ── PO Selection Screen ──────────────────────────────────────────────────────
+    function renderPOSelection() {
+      let html = `<div class="fade-in">`;
+      if (activePO) {
+        html += `<div style="padding:12px 16px;border-radius:12px;background:rgba(16,185,129,0.08);border:1px solid rgba(16,185,129,0.3);margin-bottom:16px;display:flex;justify-content:space-between;align-items:center;">
+      <div><div style="font-size:13px;font-weight:700;color:var(--green);">✅ Active Session</div>
+      <div style="font-size:12px;color:var(--muted);">PO-${activePO.docNum} — ${activePO.cardName}</div></div>
+      <button onclick="endSession()" style="padding:8px 14px;border-radius:8px;border:1px solid var(--red);background:rgba(239,68,68,0.1);color:var(--red);font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;">End Session</button>
+    </div>`;
+      }
+      html += `<div class="search-wrap"><span class="search-icon">🔍</span><input class="search-box" placeholder="Search PO number or vendor..." oninput="filterPOs(this.value)" /></div>`;
+      html += `<div id="poList">`;
+      POS.forEach(po => {
+        const totalOpen = po.lines.reduce((s, l) => s + l.openQty, 0);
+        const isActive = activePO && activePO.docEntry === po.docEntry;
+        html += `<button class="po-card" onclick="selectPO(${po.docEntry})" style="${isActive ? 'border-color:var(--green);' : ''}">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+        <div><div class="po-num">${isActive ? '✅ ' : ''}PO-${po.docNum}</div><div class="vendor">${po.cardName}</div></div>
+        <div class="badge">${po.lines.length} line${po.lines.length > 1 ? 's' : ''}</div>
+      </div>
+      <div class="meta"><span>📅 ${po.docDate}</span><span>📦 ${totalOpen} units open</span></div>
+      <div class="items-preview">${po.lines.map(l => `${l.itemCode} — ${l.itemDescription.slice(0, 35)} (${l.openQty} open)`).join('<br>')}</div>
+    </button>`;
+      });
+      html += `</div>`;
+      if (!activePO) html += `<div class="lock-banner">🔒 Scanner is locked — select a Purchase Order above to unlock</div>`;
+      html += `</div>`;
+      return html;
+    }
+
+    // ── Scanner Screen ───────────────────────────────────────────────────────────
+    function renderScanner() {
+      const items = activePO.lines.map(l => {
+        const scanned = sessionScans.filter(s => s.poLineNum === l.lineNum).reduce((s, x) => s + x.qty, 0);
+        return { ...l, scanned, remaining: l.openQty - scanned };
+      }).filter(l => l.remaining > 0);
+
+      let html = `<div class="fade-in">`;
+      html += `<div class="po-context"><div><div style="font-size:13px;font-weight:700;">PO-${activePO.docNum}</div><div style="font-size:11px;color:var(--dim);">${activePO.cardName}</div></div>
+    <div style="font-size:11px;color:var(--green);font-weight:700;">${items.length} items remaining</div></div>`;
+      html += `<div class="scanner-hud"><div class="viewfinder"></div><div class="scan-line"></div>
+    <div class="hud-overlay"><span class="hud-label">📷 Aim at GS1-128 barcode</span></div></div>`;
+      html += `<div style="font-size:12px;color:var(--muted);margin-bottom:10px;font-weight:600;">Quick Scan (Demo)</div>`;
+      html += `<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;">`;
+
+      // Valid item buttons
+      activePO.lines.forEach(l => {
+        const key = Object.keys(DEMO_BARCODES).find(k => DEMO_BARCODES[k].gtin === l.gtin);
+        if (key) html += `<button class="scan-btn" style="font-size:12px;padding:12px;" onclick="simulateScan('${key}')">📷 ${l.itemCode}</button>`;
+      });
+      html += `</div>`;
+      // Mismatch test
+      html += `<button class="scan-btn" style="background:linear-gradient(135deg,#7C3AED,#8B5CF6);font-size:12px;padding:12px;margin-bottom:8px;" onclick="simulateScan('unknown')">🚫 Test Mismatch (Wrong Item)</button>`;
+      html += `</div>`;
+      return html;
+    }
+
+    // ── Scan Result ──────────────────────────────────────────────────────────────
+    let lastScan = null;
+    function renderResult() {
+      if (!lastScan) return '';
+      const s = lastScan;
+      return `<div class="fade-in">
+    <div class="result-card success">
+      <div class="result-title" style="color:var(--green);">✅ Item Matched</div>
+      <div class="field-grid">
+        <div class="field"><div class="label">Item Code</div><div class="value">${s.itemCode}</div></div>
+        <div class="field"><div class="label">GTIN</div><div class="value" style="font-size:11px;">${s.gtin}</div></div>
+        <div class="field"><div class="label">Batch</div><div class="value">${s.batch}</div></div>
+        <div class="field"><div class="label">Expiry</div><div class="value">${s.expiry}</div></div>
+        <div class="field"><div class="label">PO Line</div><div class="value">#${s.poLineNum}</div></div>
+        <div class="field"><div class="label">Open Qty</div><div class="value">${s.remaining}</div></div>
+      </div>
+      <div style="margin-top:12px;padding:10px;border-radius:10px;background:var(--surface);font-size:12px;color:var(--muted);">
+        📋 PO-${activePO.docNum} → BaseEntry: ${activePO.docEntry} / BaseLine: ${s.poLineNum} / BaseType: 22
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+      <button class="scan-btn" style="background:var(--surface-2);font-size:13px;" onclick="goScreen('scanner')">← Back</button>
+      <button class="confirm-btn" style="font-size:13px;" onclick="confirmPutaway()">Confirm → Putaway</button>
+    </div>
+  </div>`;
+    }
+
+    // ── Mismatch ─────────────────────────────────────────────────────────────────
+    function renderMismatch() {
+      return `<div class="fade-in shake">
+    <div class="block-card">
+      <div class="icon">🚫</div>
+      <div class="title">Item not on this PO — Reject Delivery</div>
+      <div class="desc">GTIN 00000000000000 is not a line item on PO-${activePO.docNum}.<br>This product cannot be received against this Purchase Order.<br>Verify the shipment manifest.</div>
+    </div>
+    <button class="scan-btn" style="margin-top:16px;" onclick="goScreen('scanner')">← Return to Scanner</button>
+  </div>`;
+    }
+
+    // ── Putaway ──────────────────────────────────────────────────────────────────
+    function renderPutaway() {
+      const bins = ['BIN-A03-R02-L1', 'BIN-A05-R01-L3', 'BIN-B02-R04-L2', 'BIN-QC-HOLD-01'];
+      const bin = lastScan?.qcRequired ? bins[3] : bins[Math.floor(Math.random() * 3)];
+      const zone = lastScan?.qcRequired ? 'QC' : bin.split('-')[1].charAt(0);
+      return `<div class="fade-in">
+    ${lastScan?.qcRequired ? '<div style="padding:10px 16px;border-radius:10px;background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.3);margin-bottom:12px;font-size:13px;color:var(--yellow);font-weight:600;">⚠️ QC Required — Routing to Quarantine Bin</div>' : ''}
+    <div class="bin-display" ${lastScan?.qcRequired ? 'style="border-color:rgba(245,158,11,0.3);background:linear-gradient(135deg,rgba(245,158,11,0.1),rgba(245,158,11,0.02));"' : ''}>
+      <div style="font-size:12px;color:var(--dim);margin-bottom:4px;">PUTAWAY LOCATION</div>
+      <div class="bin-code" ${lastScan?.qcRequired ? 'style="color:var(--yellow);"' : ''}>${bin}</div>
+      <div class="zone">Zone ${zone} · Aisle ${bin.split('-')[1]} · Rack ${bin.split('-')[2]} · Level ${bin.split('-')[3]}</div>
+    </div>
+    <div style="padding:12px;border-radius:12px;background:var(--surface);margin-bottom:16px;font-size:12px;color:var(--muted);">
+      <div style="font-weight:600;color:var(--text);margin-bottom:4px;">📦 ${lastScan.itemCode} — ${lastScan.description}</div>
+      Qty: 1 · Batch: ${lastScan.batch} · Expiry: ${lastScan.expiry}
+    </div>
+    <button class="confirm-btn" onclick="completePutaway()">✅ Item Placed — Confirm</button>
+  </div>`;
+    }
+
+    // ── Progress Screen ──────────────────────────────────────────────────────────
+    function renderProgress() {
+      let html = `<div class="fade-in">`;
+      const lines = activePO.lines.map(l => {
+        const scanned = sessionScans.filter(s => s.poLineNum === l.lineNum).reduce((s, x) => s + x.qty, 0);
+        const total = l.alreadyReceived || l.receivedQty;
+        const received = total + scanned;
+        const pct = (received / l.quantity) * 100;
+        const status = received >= l.quantity ? 'complete' : scanned > 0 ? 'partial' : 'pending';
+        return { ...l, scanned, received, pct, status };
+      });
+      const colors = { complete: 'var(--green)', partial: 'var(--yellow)', pending: '#374151' };
+      const icons = { complete: '✅', partial: '🟡', pending: '⬜' };
+      const totalRcvd = lines.reduce((s, l) => s + l.received, 0);
+      const totalQty = lines.reduce((s, l) => s + l.quantity, 0);
+
+      html += `<div style="padding:14px 16px;border-radius:14px;background:var(--surface);border:1px solid var(--border);margin-bottom:16px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+      <div><div style="font-size:14px;font-weight:700;">PO-${activePO.docNum} Progress</div>
+      <div style="font-size:11px;color:var(--dim);margin-top:2px;">${lines.filter(l => l.status === 'complete').length}/${lines.length} lines · ${totalRcvd}/${totalQty} units</div></div>
+      <div style="padding:4px 10px;border-radius:8px;background:rgba(59,130,246,0.15);color:var(--blue);font-size:11px;font-weight:700;">${Math.round((totalRcvd / totalQty) * 100)}%</div>
+    </div></div>`;
+
+      lines.forEach(l => {
+        html += `<div class="line-progress">
+      <div class="line-header"><div class="line-name">${icons[l.status]} ${l.itemCode}</div><div class="line-count" style="color:${colors[l.status]}">${l.received}/${l.quantity}</div></div>
+      <div class="progress-bar"><div class="progress-fill" style="width:${Math.min(l.pct, 100)}%;background:${colors[l.status]};"></div></div>
+      <div style="font-size:11px;color:var(--dim);margin-top:4px;">${l.itemDescription.slice(0, 45)}</div>
+      ${l.scanned > 0 ? `<div style="font-size:11px;color:var(--blue);font-weight:600;margin-top:2px;">+${l.scanned} this session</div>` : ''}
+    </div>`;
+      });
+
+      if (sessionScans.length > 0) {
+        html += `<button class="scan-btn" style="margin-top:12px;background:linear-gradient(135deg,#7C3AED,#8B5CF6);font-size:13px;" onclick="postGRPO()">📄 Post GRPO to SAP B1</button>`;
+      }
+      html += `</div>`;
+      return html;
+    }
+
+    // ── Actions ──────────────────────────────────────────────────────────────────
+    function selectPO(docEntry) {
+      activePO = POS.find(p => p.docEntry === docEntry);
+      sessionScans = [];
+      goScreen('scanner');
+    }
+
+    function endSession() {
+      activePO = null; sessionScans = []; goScreen('po');
+    }
+
+    function simulateScan(key) {
+      const barcode = DEMO_BARCODES[key];
+      const matchLine = activePO.lines.find(l => l.gtin === barcode.gtin);
+      if (!matchLine) { currentScreen = 'mismatch'; render(); return; }
+      const scanned = sessionScans.filter(s => s.poLineNum === matchLine.lineNum).reduce((s, x) => s + x.qty, 0);
+      const remaining = matchLine.openQty - scanned;
+      if (remaining <= 0) { currentScreen = 'mismatch'; render(); return; }
+      lastScan = { itemCode: matchLine.itemCode, description: matchLine.itemDescription, gtin: barcode.gtin, batch: barcode.batch, expiry: barcode.expiry, serial: barcode.serial, poLineNum: matchLine.lineNum, remaining, qcRequired: matchLine.qcRequired };
+      currentScreen = 'result'; render();
+    }
+
+    function confirmPutaway() { currentScreen = 'putaway'; render(); }
+
+    function completePutaway() {
+      sessionScans.push({ poLineNum: lastScan.poLineNum, itemCode: lastScan.itemCode, gtin: lastScan.gtin, batch: lastScan.batch, qty: 1, scannedAt: new Date().toISOString() });
+      lastScan = null; goScreen('scanner');
+    }
+
+    function postGRPO() {
+      const payload = {
+        cardCode: activePO.cardCode, docDate: new Date().toISOString().split('T')[0],
+        lines: sessionScans.map(s => ({ baseType: 22, baseEntry: activePO.docEntry, baseLine: s.poLineNum, itemCode: s.itemCode, quantity: s.qty, batchNo: s.batch }))
+      };
+      alert(`✅ GRPO Posted to SAP B1!\n\nDocEntry: ${10000 + Math.floor(Math.random() * 999)}\nLines: ${payload.lines.length}\nBaseType: 22 (Purchase Order)\nBaseEntry: ${activePO.docEntry}\n\n${JSON.stringify(payload, null, 2)}`);
+      sessionScans = []; goScreen('progress');
+    }
+
+    function filterPOs(q) {
+      // Simple search filter (demo only)
+      document.querySelectorAll('.po-card').forEach(card => {
+        card.style.display = card.textContent.toLowerCase().includes(q.toLowerCase()) ? '' : 'none';
+      });
+    }
+
+    // ── Init ──────────────────────────────────────────────────────────────────────
+    render();
+  </script>
 </body>
+
 </html>
