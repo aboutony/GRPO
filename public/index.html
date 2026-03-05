@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GRPO — Medical Device Receiving Module</title>
+  <meta name="description" content="Intelligent GRPO module for SAP Business One medical device receiving with GS1 barcode parsing, SABER regulatory validation, and SFDA compliance." />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #0A0E1A;
+      --surface: #111827;
+      --surface-2: #1E293B;
+      --border: #1E293B;
+      --text: #F9FAFB;
+      --text-muted: #94A3B8;
+      --accent: #3B82F6;
+      --accent-glow: rgba(59, 130, 246, 0.2);
+      --green: #10B981;
+      --yellow: #F59E0B;
+      --red: #EF4444;
+      --purple: #8B5CF6;
+    }
+    body {
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* ── Animated Background ─────────────────────────────────── */
+    .bg-grid {
+      position: fixed; inset: 0; z-index: 0;
+      background-image:
+        linear-gradient(rgba(59, 130, 246, 0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(59, 130, 246, 0.03) 1px, transparent 1px);
+      background-size: 60px 60px;
+      animation: gridPulse 8s ease-in-out infinite;
+    }
+    @keyframes gridPulse {
+      0%, 100% { opacity: 0.4; }
+      50% { opacity: 1; }
+    }
+    .glow-orb {
+      position: fixed; border-radius: 50%; filter: blur(120px);
+      z-index: 0; pointer-events: none;
+    }
+    .glow-orb-1 { width: 500px; height: 500px; background: var(--accent-glow); top: -100px; right: -100px; animation: float1 12s ease-in-out infinite; }
+    .glow-orb-2 { width: 400px; height: 400px; background: rgba(16, 185, 129, 0.08); bottom: -100px; left: -100px; animation: float2 15s ease-in-out infinite; }
+    @keyframes float1 { 0%, 100% { transform: translate(0, 0); } 50% { transform: translate(-60px, 40px); } }
+    @keyframes float2 { 0%, 100% { transform: translate(0, 0); } 50% { transform: translate(40px, -60px); } }
+
+    /* ── Layout ──────────────────────────────────────────────── */
+    .container { position: relative; z-index: 1; max-width: 1100px; margin: 0 auto; padding: 40px 24px; }
+
+    /* ── Header ──────────────────────────────────────────────── */
+    .header { text-align: center; margin-bottom: 60px; }
+    .badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 6px 16px; border-radius: 100px;
+      background: var(--accent-glow); border: 1px solid rgba(59, 130, 246, 0.3);
+      font-size: 12px; font-weight: 600; color: var(--accent);
+      text-transform: uppercase; letter-spacing: 0.05em;
+      margin-bottom: 24px;
+    }
+    .badge .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); animation: pulse 2s infinite; }
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+    h1 {
+      font-size: clamp(2.5rem, 6vw, 4rem); font-weight: 900;
+      line-height: 1.1; margin-bottom: 16px;
+      background: linear-gradient(135deg, #F9FAFB 0%, #94A3B8 100%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
+    h1 span {
+      background: linear-gradient(135deg, var(--accent) 0%, #818CF8 100%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
+    .subtitle { font-size: 18px; color: var(--text-muted); max-width: 620px; margin: 0 auto; line-height: 1.6; }
+
+    /* ── Sprint Grid ─────────────────────────────────────────── */
+    .sprint-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 16px; margin-bottom: 48px;
+    }
+    .sprint-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px; padding: 24px;
+      transition: all 0.3s ease;
+      position: relative; overflow: hidden;
+    }
+    .sprint-card:hover {
+      border-color: rgba(59, 130, 246, 0.3);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 32px rgba(59, 130, 246, 0.1);
+    }
+    .sprint-card .sprint-num {
+      font-size: 11px; font-weight: 700; color: var(--accent);
+      text-transform: uppercase; letter-spacing: 0.08em;
+      margin-bottom: 8px;
+    }
+    .sprint-card h3 { font-size: 16px; font-weight: 700; margin-bottom: 8px; }
+    .sprint-card p { font-size: 13px; color: var(--text-muted); line-height: 1.5; }
+    .sprint-card .icon {
+      position: absolute; top: 20px; right: 20px;
+      font-size: 28px; opacity: 0.6;
+    }
+    .sprint-card .file-count {
+      display: inline-flex; align-items: center; gap: 4px;
+      margin-top: 12px; padding: 4px 10px;
+      border-radius: 6px; background: var(--surface-2);
+      font-size: 11px; font-weight: 600; color: var(--text-muted);
+    }
+
+    /* ── Stats Bar ───────────────────────────────────────────── */
+    .stats {
+      display: flex; justify-content: center; gap: 40px;
+      flex-wrap: wrap; margin-bottom: 48px;
+      padding: 24px; border-radius: 16px;
+      background: var(--surface); border: 1px solid var(--border);
+    }
+    .stat { text-align: center; }
+    .stat .value {
+      font-size: 32px; font-weight: 800;
+      background: linear-gradient(135deg, var(--accent), var(--green));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
+    .stat .label { font-size: 12px; color: var(--text-muted); margin-top: 2px; text-transform: uppercase; letter-spacing: 0.05em; }
+
+    /* ── Flow Diagram ────────────────────────────────────────── */
+    .flow {
+      display: flex; align-items: center; justify-content: center;
+      flex-wrap: wrap; gap: 8px; margin-bottom: 48px;
+    }
+    .flow-step {
+      padding: 8px 16px; border-radius: 8px;
+      background: var(--surface); border: 1px solid var(--border);
+      font-size: 12px; font-weight: 600;
+      white-space: nowrap; transition: all 0.3s;
+    }
+    .flow-step:hover { border-color: var(--accent); background: var(--accent-glow); }
+    .flow-arrow { color: var(--text-muted); font-size: 14px; }
+
+    /* ── Facilities ──────────────────────────────────────────── */
+    .facilities {
+      display: grid; grid-template-columns: repeat(3, 1fr);
+      gap: 16px; margin-bottom: 48px;
+    }
+    @media (max-width: 700px) { .facilities { grid-template-columns: 1fr; } }
+    .facility {
+      padding: 20px; border-radius: 16px;
+      background: var(--surface); border: 1px solid var(--border);
+      text-align: center;
+    }
+    .facility .city { font-size: 18px; font-weight: 700; }
+    .facility .province { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+    .facility .status {
+      display: inline-block; margin-top: 10px; padding: 4px 12px;
+      border-radius: 100px; font-size: 11px; font-weight: 700;
+    }
+    .status-active { background: rgba(16, 185, 129, 0.15); color: var(--green); }
+    .status-provisioning { background: rgba(245, 158, 11, 0.15); color: var(--yellow); }
+
+    /* ── Footer ──────────────────────────────────────────────── */
+    footer {
+      text-align: center; padding: 32px 0; font-size: 13px;
+      color: var(--text-muted); border-top: 1px solid var(--border);
+    }
+    footer a { color: var(--accent); text-decoration: none; }
+    footer a:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+  <div class="bg-grid"></div>
+  <div class="glow-orb glow-orb-1"></div>
+  <div class="glow-orb glow-orb-2"></div>
+
+  <div class="container">
+    <!-- Header -->
+    <header class="header">
+      <div class="badge"><span class="dot"></span> 9 Sprints Complete</div>
+      <h1>GRPO <span>Medical Device</span><br/>Receiving Module</h1>
+      <p class="subtitle">
+        Intelligent goods receipt for SAP Business One. Single-scan GS1 barcode capture,
+        SABER regulatory validation, SFDA compliance, and QC safety gates — deployed
+        across 3 KSA warehouses.
+      </p>
+    </header>
+
+    <!-- Stats -->
+    <div class="stats">
+      <div class="stat"><div class="value">108</div><div class="label">Source Files</div></div>
+      <div class="stat"><div class="value">13.5K</div><div class="label">Lines of Code</div></div>
+      <div class="stat"><div class="value">3</div><div class="label">KSA Facilities</div></div>
+      <div class="stat"><div class="value">19</div><div class="label">Operators</div></div>
+      <div class="stat"><div class="value">24</div><div class="label">Devices</div></div>
+    </div>
+
+    <!-- Flow -->
+    <div class="flow">
+      <div class="flow-step">📷 Scan</div><span class="flow-arrow">→</span>
+      <div class="flow-step">🔍 GS1 Parse</div><span class="flow-arrow">→</span>
+      <div class="flow-step">🛡️ SABER</div><span class="flow-arrow">→</span>
+      <div class="flow-step">🔬 QC Gate</div><span class="flow-arrow">→</span>
+      <div class="flow-step">📦 Putaway</div><span class="flow-arrow">→</span>
+      <div class="flow-step">📄 SAP Post</div><span class="flow-arrow">→</span>
+      <div class="flow-step">📋 Audit</div><span class="flow-arrow">→</span>
+      <div class="flow-step">🇸🇦 SFDA</div>
+    </div>
+
+    <!-- Sprint Grid -->
+    <div class="sprint-grid">
+      <div class="sprint-card">
+        <div class="sprint-num">Sprint 1.1 + 1.2</div>
+        <span class="icon">🏗️</span>
+        <h3>SAP B1 Foundation</h3>
+        <p>Schema provisioning (2 UDTs, 21 UDFs) and DI API Adapter with atomic transactions and circuit breaker.</p>
+        <div class="file-count">📁 34 files</div>
+      </div>
+      <div class="sprint-card">
+        <div class="sprint-num">Sprint 2.1</div>
+        <span class="icon">📡</span>
+        <h3>Mobile Sync Engine</h3>
+        <p>Offline-first with SQLite WAL, background sync worker, conflict resolution UI, and haptic feedback.</p>
+        <div class="file-count">📁 15 files</div>
+      </div>
+      <div class="sprint-card">
+        <div class="sprint-num">Sprint 2.2</div>
+        <span class="icon">📷</span>
+        <h3>Scan-First UI</h3>
+        <p>GS1-128/DataMatrix parser for single-scan extraction of GTIN, Batch, Expiry, Serial. HUD camera overlay.</p>
+        <div class="file-count">📁 12 files</div>
+      </div>
+      <div class="sprint-card">
+        <div class="sprint-num">Sprint 2.3</div>
+        <span class="icon">🔬</span>
+        <h3>QC & Quarantine</h3>
+        <p>Automated QC hold routing, evidence photo capture, defect codes, batch locking, and one-click recall.</p>
+        <div class="file-count">📁 10 files</div>
+      </div>
+      <div class="sprint-card">
+        <div class="sprint-num">Sprint 3.1</div>
+        <span class="icon">🛡️</span>
+        <h3>SABER & SFDA</h3>
+        <p>Pre-receipt certificate validation, SFDA daily export service, SHA-256 audit log hash chain.</p>
+        <div class="file-count">📁 11 files</div>
+      </div>
+      <div class="sprint-card">
+        <div class="sprint-num">Sprint 4.1</div>
+        <span class="icon">🎬</span>
+        <h3>Interactive Demo</h3>
+        <p>3-scene Story Mode with pre-loaded POs, GS1 barcodes, SABER/SAP mocks, and StoryRunner UI.</p>
+        <div class="file-count">📁 8 files</div>
+      </div>
+      <div class="sprint-card">
+        <div class="sprint-num">Sprint 5.1</div>
+        <span class="icon">🚀</span>
+        <h3>Riyadh Pilot & UAT</h3>
+        <p>10-device fleet, 12 user stories, performance monitoring (P50/P95/P99), and mock recall drill.</p>
+        <div class="file-count">📁 10 files</div>
+      </div>
+      <div class="sprint-card">
+        <div class="sprint-num">Sprint 6.1</div>
+        <span class="icon">🌐</span>
+        <h3>Nationwide Rollout</h3>
+        <p>3-facility deployment, global recall, training drills, 30-day hypercare, and compliance handover.</p>
+        <div class="file-count">📁 8 files</div>
+      </div>
+    </div>
+
+    <!-- Facilities -->
+    <div class="facilities">
+      <div class="facility">
+        <div style="font-size: 32px; margin-bottom: 8px;">🏢</div>
+        <div class="city">Riyadh</div>
+        <div class="province">Central Province — WH01</div>
+        <div class="status status-active">● Live</div>
+      </div>
+      <div class="facility">
+        <div style="font-size: 32px; margin-bottom: 8px;">🏭</div>
+        <div class="city">Jeddah</div>
+        <div class="province">Western Province — WH02</div>
+        <div class="status status-provisioning">◉ Provisioning</div>
+      </div>
+      <div class="facility">
+        <div style="font-size: 32px; margin-bottom: 8px;">🏗️</div>
+        <div class="city">Dammam</div>
+        <div class="province">Eastern Province — WH03</div>
+        <div class="status status-provisioning">◉ Provisioning</div>
+      </div>
+    </div>
+
+    <footer>
+      GRPO Medical Device Receiving Module · UNIMED &copy; 2026 · Powered by <a href="https://github.com/aboutony/GRPO" target="_blank">GitHub</a>
+    </footer>
+  </div>
+</body>
+</html>
