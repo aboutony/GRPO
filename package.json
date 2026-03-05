@@ -1,0 +1,18 @@
+{
+  "name": "grpo-module",
+  "version": "1.0.0",
+  "description": "SAP B1 GRPO Module – Generic Product Schema Provisioning",
+  "private": true,
+  "scripts": {
+    "provision": "ts-node src/provision.ts",
+    "verify": "ts-node src/verify.ts"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.7"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.3",
+    "ts-node": "^10.9.2",
+    "@types/node": "^22.13.5"
+  }
+}
